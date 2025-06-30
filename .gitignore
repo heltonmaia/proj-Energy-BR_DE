@@ -1,0 +1,32 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Temporary files
+*.tmp
+*.log
+*.bak
+*.swp
+*.swo
+
+# Data and scratch directories
+tmp/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# Ignore data output (optional)
+# data/output/ 
