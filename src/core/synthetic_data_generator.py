@@ -35,8 +35,12 @@ class SyntheticDataGenerator:
         return pd.date_range(start=start_time, periods=num_points, freq=f"{self.sim_config.time_resolution_minutes}min")
 
     def generate_complete_profile(self) -> pd.DataFrame:
-        timestamps = self._generate_timestamps()
-        n = len(timestamps)
+        n_months = self.sim_config.duration_days // 30
+        n_per_month = (30 * 24 * 60) // self.sim_config.time_resolution_minutes
+        n = n_months * n_per_month
+        # Geração dos índices neutros
+        month = np.repeat(np.arange(1, n_months + 1), n_per_month)
+        minute_of_month = np.tile(np.arange(0, n_per_month) * self.sim_config.time_resolution_minutes, n_months)
         
         # Calcular potência média em kW a partir de GWh/mês
         national_avg_kws = {}
@@ -53,11 +57,8 @@ class SyntheticDataGenerator:
         power_profiles = {}
         for src, cfg in self.sources.items():
             avg_kw = national_avg_kws[src] * norm_factor
-            hours = np.arange(n) * self.sim_config.time_resolution_minutes / 60.0
-            daily_cycle = 0.15 * np.sin(2 * np.pi * (hours % 24) / 24)
-            noise = np.random.normal(0, 0.03, n)
-            profile = avg_kw * (1 + daily_cycle + noise)
-            profile = np.maximum(0, profile)
+            # Geração constante (sem oscilação ou ruído)
+            profile = np.full(n, avg_kw)
             power_profiles[f'{src}_power_kw'] = profile
         
         # Consumo industrial total (soma exata = total_consumption_kwh)
@@ -86,15 +87,14 @@ class SyntheticDataGenerator:
         cost = total_consumption * time_res_h * (avg_cost / 1000)
         
         df = pd.DataFrame({
-            'timestamp': timestamps,
+            'month': month,
+            'minute_of_month': minute_of_month,
             **power_profiles,
             'industrial_consumption_kw': total_consumption,
             **used_profiles,
             f'energy_cost_({self.sim_config.country.value.upper()})': cost
         })
         
-        if 'timestamp' in df.columns:
-            df['timestamp'] = df['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
         return df
 
     def save_data(self, df: pd.DataFrame, output_dir: str = "data/synthetic"):
@@ -109,7 +109,7 @@ class SyntheticDataGenerator:
             'simulation_config': asdict(self.sim_config),
             'sources': {k: asdict(v) for k, v in self.sources.items()},
             'industrial_config': asdict(self.industrial_config),
-            'generated_at': datetime.now().isoformat(),
+            'generated_at': 'synthetic',
             'num_points': len(df)
         }
         
@@ -145,14 +145,6 @@ class SyntheticDataGenerator:
         
         # Preparar dados para JSON
         df_copy = df.copy()
-        
-        # Garantir que timestamp seja string ISO
-        if 'timestamp' in df_copy.columns:
-            if pd.api.types.is_datetime64_any_dtype(df_copy['timestamp']):
-                df_copy['timestamp'] = df_copy['timestamp'].dt.strftime('%Y-%m-%dT%H:%M:%S')
-            else:
-                # Se já é string, garantir formato correto
-                df_copy['timestamp'] = pd.to_datetime(df_copy['timestamp']).dt.strftime('%Y-%m-%dT%H:%M:%S')
         
         # Converter para registros
         data_records = df_copy.to_dict(orient='records')

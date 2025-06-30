@@ -2,6 +2,16 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 
+# Paleta de cores fixa para fontes
+SOURCE_COLORS = {
+    'solar': 'orange',
+    'wind': 'skyblue',
+    'hydropower': 'green',
+    'biomass': 'brown',
+    'biogas': 'purple',
+    'grid': 'gray',
+}
+
 def plot_stacked_bar_chart(data_dict, title, ylabel, xlabel="Source", save_path=None, figsize=(12, 6)):
     """
     Cria gráfico de barras empilhadas no estilo solicitado.
@@ -75,13 +85,17 @@ def plot_dual_energy_figures(df, country, save_path=None, max_points=1000):
     """
     import matplotlib.ticker as mtick
     
-    # Convert timestamp to datetime if necessary
-    if not pd.api.types.is_datetime64_any_dtype(df['timestamp']):
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-    
-    # Convert timestamps to days since start
-    start_time = df['timestamp'].iloc[0]
-    df['days'] = (df['timestamp'] - start_time).dt.total_seconds() / (24 * 3600)
+    # Suporte a dados sem timestamp (apenas month e minute_of_month)
+    if 'timestamp' not in df.columns and 'month' in df.columns and 'minute_of_month' in df.columns:
+        # Criar eixo de tempo sintético em dias
+        minutes_per_month = df['minute_of_month'].max() + (df['minute_of_month'].iloc[1] - df['minute_of_month'].iloc[0])
+        df['days'] = (df['month'] - 1) * (minutes_per_month / 1440) + df['minute_of_month'] / 1440
+    else:
+        # Convert timestamp to datetime if necessary
+        if not pd.api.types.is_datetime64_any_dtype(df['timestamp']):
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+        start_time = df['timestamp'].iloc[0]
+        df['days'] = (df['timestamp'] - start_time).dt.total_seconds() / (24 * 3600)
     
     # Sample if too many points
     if len(df) > max_points:
@@ -96,35 +110,40 @@ def plot_dual_energy_figures(df, country, save_path=None, max_points=1000):
     all_sources = [col.replace('_power_kw','') for col in power_cols]
     used_sources = [col.replace('_used_kw','') for col in used_cols]
     
-    # Calculate temporal resolution
-    if len(df) > 1:
-        try:
-            t0 = pd.to_datetime(df['timestamp'].iloc[0])
-            t1 = pd.to_datetime(df['timestamp'].iloc[1])
-            time_res_h = float((t1 - t0).total_seconds()) / 3600.0
-        except Exception:
-            time_res_h = 0.25  # 15 minutes by default
+    # Calcular resolução temporal
+    if 'timestamp' not in df.columns and 'minute_of_month' in df.columns:
+        time_res_h = (df['minute_of_month'].iloc[1] - df['minute_of_month'].iloc[0]) / 60.0
     else:
-        time_res_h = 0.25
+        if len(df) > 1:
+            try:
+                t0 = pd.to_datetime(df['timestamp'].iloc[0])
+                t1 = pd.to_datetime(df['timestamp'].iloc[1])
+                time_res_h = float((t1 - t0).total_seconds()) / 3600.0
+            except Exception:
+                time_res_h = 0.25
+        else:
+            time_res_h = 0.25
     
-    # Group data by month
-    df['month'] = df['timestamp'].dt.to_period('M')
-    df['month_number'] = df['timestamp'].dt.month + (df['timestamp'].dt.year - df['timestamp'].dt.year.iloc[0]) * 12
+    # Agrupamento mensal neutro
+    if 'month' in df.columns:
+        df['month_group'] = df['month']
+    else:
+        df['month_group'] = df['timestamp'].dt.to_period('M')
     
-    # Calculate monthly totals for generation and consumption (kWh)
+    # Calcular totais mensais
     monthly_generation = {}
     monthly_consumption = {}
     
     for src in all_sources:
         col_name = f'{src}_power_kw'
         if col_name in df.columns:
-            monthly_data = df.groupby('month')[col_name].sum() * time_res_h
+            monthly_data = df.groupby('month_group')[col_name].sum() * time_res_h
             monthly_generation[src] = monthly_data
     
     for src in used_sources:
         col_name = f'{src}_used_kw'
         if col_name in df.columns:
-            monthly_data = df.groupby('month')[col_name].sum() * time_res_h
+            monthly_data = df.groupby('month_group')[col_name].sum() * time_res_h
             monthly_consumption[src] = monthly_data
     
     # Calculate overall totals for percentages
@@ -176,11 +195,10 @@ def plot_dual_energy_figures(df, country, save_path=None, max_points=1000):
     
     # 1. Generation by source (without consumption)
     ax1 = axs[0,0]
-    colors = ['orange', 'skyblue', 'green', 'red', 'purple', 'brown']
     for i, src in enumerate(all_sources):
         col_name = f'{src}_power_kw'
         if col_name in df_plot.columns:
-            color = colors[i % len(colors)]
+            color = SOURCE_COLORS.get(src, f'C{i}')
             ax1.plot(df_plot['days'], df_plot[col_name], 
                     label=f'{src.capitalize()} Generation (kW)', color=color, linewidth=1)
     ax1.set_ylabel('Generation Power (kW)', color='blue')
@@ -200,19 +218,19 @@ def plot_dual_energy_figures(df, country, save_path=None, max_points=1000):
 
     # 1b. Monthly stacked generation bars (upper right panel) - GWh scale
     if monthly_generation:
-        # Create DataFrame for monthly stacked chart
         generation_data = {}
-        for src in all_sources:
+        bar_colors = []
+        for i, src in enumerate(all_sources):
             if src in monthly_generation:
-                # Convert to GWh
                 generation_data[src.capitalize()] = monthly_generation[src].values / 1000000
-        
-        # Get month numbers (1, 2, 3, ...)
-        month_numbers = list(range(1, len(monthly_generation[list(monthly_generation.keys())[0]]) + 1))
-        
-        # Plot stacked chart
+                bar_colors.append(SOURCE_COLORS.get(src, f'C{i}'))
+        # Corrigir bug: garantir que só meses completos sejam plotados
+        min_len = min(len(v) for v in generation_data.values()) if generation_data else 0
+        for k in generation_data:
+            generation_data[k] = generation_data[k][:min_len]
+        month_numbers = list(range(1, min_len + 1))
         df_gen = pd.DataFrame(generation_data, index=month_numbers)
-        df_gen.plot(kind='bar', stacked=True, ax=axs[0,1], colormap="Set3", edgecolor='black')
+        df_gen.plot(kind='bar', stacked=True, ax=axs[0,1], color=bar_colors, edgecolor='black')
         
         # Add total values on top of bars (in GWh)
         total_values = df_gen.sum(axis=1)
@@ -234,7 +252,7 @@ def plot_dual_energy_figures(df, country, save_path=None, max_points=1000):
     for i, src in enumerate(used_sources):
         col_name = f'{src}_used_kw'
         if col_name in df_plot.columns:
-            color = colors[i % len(colors)]
+            color = SOURCE_COLORS.get(src, f'C{i}')
             axs[1,0].plot(df_plot['days'], df_plot[col_name], 
                          label=f'{src.capitalize()} Used (kW)', color=color, linewidth=1.5)
     axs[1,0].set_ylabel('Consumption Power (kW)')
@@ -245,18 +263,18 @@ def plot_dual_energy_figures(df, country, save_path=None, max_points=1000):
     
     # 2b. Monthly stacked consumption bars (lower right panel) - kWh with currency
     if monthly_consumption:
-        # Create DataFrame for monthly stacked chart
         consumption_data = {}
-        for src in used_sources:
+        bar_colors = []
+        for i, src in enumerate(used_sources):
             if src in monthly_consumption:
                 consumption_data[src.capitalize()] = monthly_consumption[src].values
-        
-        # Get month numbers (1, 2, 3, ...)
-        month_numbers = list(range(1, len(monthly_consumption[list(monthly_consumption.keys())[0]]) + 1))
-        
-        # Plot stacked chart
+                bar_colors.append(SOURCE_COLORS.get(src, f'C{i}'))
+        min_len = min(len(v) for v in consumption_data.values()) if consumption_data else 0
+        for k in consumption_data:
+            consumption_data[k] = consumption_data[k][:min_len]
+        month_numbers = list(range(1, min_len + 1))
         df_cons = pd.DataFrame(consumption_data, index=month_numbers)
-        df_cons.plot(kind='bar', stacked=True, ax=axs[1,1], colormap="Set3", edgecolor='black')
+        df_cons.plot(kind='bar', stacked=True, ax=axs[1,1], color=bar_colors, edgecolor='black')
         
         # Add total values on top of bars (kWh + currency)
         total_values = df_cons.sum(axis=1)
