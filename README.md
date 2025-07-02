@@ -54,5 +54,3 @@ python src/app_cli.py
 - Data and plots are saved in `data/synthetic/`.
 
 ---
-
-Feel free to adapt or expand according to your project's focus!
