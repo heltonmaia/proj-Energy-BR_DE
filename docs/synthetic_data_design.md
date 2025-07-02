@@ -1,6 +1,6 @@
 # Electricity Generation Data — Brazil 🇧🇷 & Germany 🇩🇪
 
-This document presents updated, corrected data on electricity generation sources, average monthly generation, and industrial costs for Brazil and Germany, based on recent statistics and reputable sources.
+This document presents updated, corrected data on electricity generation sources, average monthly generation, industrial costs, grid reliability, and curtailment for Brazil and Germany, based on recent statistics and reputable sources.
 
 ---
 
@@ -16,7 +16,7 @@ This document presents updated, corrected data on electricity generation sources
 
 **Notes:**
 
-1. Hydropower still dominates Brazil's mix (~67% in 2023), down from ~74% in 2018 due to solar/wind growth. Total yearly generation ~550 TWh. ([Reuters](https://www.reuters.com/markets/commodities/brazil-diversifies-clean-power-sources-away-hydro-2024-03-14/?utm_source=chatgpt.com))
+1. Hydropower still dominates Brazil's mix (~67% in 2023), down from ~74% in 2018 due to solar/wind growth. Total yearly generation ~550 TWh. ([Reuters](https://www.reuters.com/markets/commodities/brazil-diversifies-clean-power-sources-away-hydro-2024-03-14))
 2. Cost estimates reflect typical LCOE values from auctions and market analysis in Brazil.
 
 ---
@@ -37,22 +37,70 @@ This document presents updated, corrected data on electricity generation sources
 
 ---
 
+## ⚡ Grid Reliability & Outages
+
+### 🇧🇷 Brazil – Power Interruptions
+
+- **Average outage duration (SAIDI):** ~624 minutes/year (~10.4 hours), for all consumers.
+- **Outages/year (SAIFI):** ~5.2 interruptions annually (2023, ANEEL).
+- **Industrial impact:** Particularly high in Northern and rural regions (up to 70+ hours/year).
+- **Extreme events:** Floods and infrastructure failures can cause **days-long outages** (e.g., up to 30 days in parts of Rio Grande do Sul in 2024).
+
+### 🇩🇪 Germany – Power Interruptions
+
+- **Average outage duration (SAIDI):** ~13 minutes/year (BNetzA, 2023).
+- **Outages/year (SAIFI):** ~0.24 interruptions/year.
+- **Industrial impact:** Extremely low; most industrial facilities experience near-uninterrupted supply.
+- **Short interruptions (<3 min):** Reported by ~50% of German firms, but rarely disruptive.
+
+---
+
+## ⚠️ Curtailment of Renewable Energy
+
+**Curtailment** refers to the reduction of renewable generation (e.g. wind, solar) due to grid constraints or oversupply. It results in lost clean energy that cannot be used or transmitted.
+
+| Feature                    | 🇧🇷 Brazil                                 | 🇩🇪 Germany                             |
+|----------------------------|-------------------------------------------|-----------------------------------------|
+| Main cause                 | Grid congestion (esp. NE), hydro dispatch | Transmission bottlenecks (north → south)|
+| Affected sources           | Mostly wind, solar                        | Wind (onshore/offshore), some solar     |
+| Compensation for curtailment | No standardized payments; limited relief | Yes, legally mandated payments          |
+| Curtailment rate (est.)    | ~1.5–3% of renewable generation           | ~1.8% of renewable generation (2023)    |
+| Infrastructure bottleneck | Transmission line delays                  | North–South grid capacity                |
+
+### 🇧🇷 Brazil
+
+- Wind and solar are curtailed particularly in the **Northeast**, where generation exceeds local demand and transmission is delayed.
+- Hydro plants with reservoirs often take dispatch priority.
+- Lack of compensation discourages further private investment in some regions.
+
+### 🇩🇪 Germany
+
+- Curtailment mainly affects **onshore wind** in the North due to limited capacity to transfer energy to the industrial South.
+- Operators are **compensated** for curtailed energy (*Entschädigungszahlungen*).
+- Grid expansion projects (e.g., SuedLink) aim to reduce the issue long-term.
+
+---
+
 ## 🔍 Summary
 
 - **Brazil** still relies heavily on **hydropower** (~67%), but **wind** and **solar PV** have grown substantially since 2018, now contributing over **22%** combined.
 - **Germany** leads in **wind and solar**, with wind accounting for nearly **1/3** of the electricity mix.
 - **Biomass** and **biogas** play small but consistent roles in both countries.
-- Costs are generally **lower in Brazil** (due to natural resources and low-carbon legacy infrastructure) but **more volatile** due to transmission and regulation issues.
+- **Grid reliability:** Germany has **one of the most reliable grids globally** (~13 min/year outage), while Brazil’s system is **more vulnerable**, with outages averaging **10+ hours/year** and worsening in extreme weather conditions.
+- **Curtailment:** Both countries lose some renewable generation due to transmission constraints; Germany has better compensation mechanisms.
+- **Costs:** Generally **lower in Brazil**, but more **volatile and regionally inconsistent** compared to Germany.
 
 ---
 
 ## 📚 Sources
 
-- [Reuters (2024) – Brazil shifts clean energy away from hydropower](https://www.reuters.com/markets/commodities/brazil-diversifies-clean-power-sources-away-hydro-2024-03-14/?utm_source=chatgpt.com)
-- [Wikipedia – Energy in Brazil](https://en.wikipedia.org/wiki/Energy_in_Brazil?utm_source=chatgpt.com)
-- [Wikipedia – Electricity sector in Germany](https://en.wikipedia.org/wiki/Electricity_sector_in_Germany?utm_source=chatgpt.com)
-- [LowCarbonPower.org – Brazil](https://lowcarbonpower.org/region/Brazil?utm_source=chatgpt.com)
-- [Fraunhofer ISE – LCOE Study (2024)](https://www.ise.fraunhofer.de/en/publications/studies/lcoe.html?utm_source=chatgpt.com)
-- [Eurostat – Energy Statistics](https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Electricity_and_heat_statistics?utm_source=chatgpt.com)
-
+- [Reuters (2024) – Brazil shifts clean energy away from hydropower](https://www.reuters.com/markets/commodities/brazil-diversifies-clean-power-sources-away-hydro-2024-03-14)
+- [Wikipedia – Energy in Brazil](https://en.wikipedia.org/wiki/Energy_in_Brazil)
+- [Wikipedia – Electricity sector in Germany](https://en.wikipedia.org/wiki/Electricity_sector_in_Germany)
+- [LowCarbonPower.org – Brazil](https://lowcarbonpower.org/region/Brazil)
+- [Fraunhofer ISE – LCOE Study (2024)](https://www.ise.fraunhofer.de/en/publications/studies/lcoe.html)
+- [Eurostat – Electricity and Heat Statistics](https://ec.europa.eu/eurostat/statistics-explained/index.php?title=Electricity_and_heat_statistics)
+- [ANEEL (2023) – Interruption Duration and Frequency](https://www.aneel.gov.br/dados-tecnicos-interrupcoes)
+- [Bundesnetzagentur – Monitoring Report 2023](https://www.bundesnetzagentur.de/EN/Areas/Energy)
+- [Energy-Charts – Fraunhofer ISE](https://www.energy-charts.info/index.html?l=en&c=DE)
 

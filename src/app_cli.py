@@ -46,7 +46,7 @@ def run_simulation():
         print(f"  - {src}")
     while True:
         try:
-            total_consumption_kwh = float(input("Informe o total de energia a ser consumida no mês (kWh): "))
+            total_consumption_kwh = float(input(f"Informe o total de energia a ser consumida no período de {months} mês(es) (kWh): "))
             break
         except ValueError:
             print("Invalid input. Please enter a number.")

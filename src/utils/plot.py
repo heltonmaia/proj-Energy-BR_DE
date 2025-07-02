@@ -247,8 +247,12 @@ def plot_dual_energy_figures(df, country, save_path=None, max_points=1000):
     
     # 2. Detailed temporal consumption
     if 'industrial_consumption_kw' in df_plot.columns:
-        axs[1,0].plot(df_plot['days'], df_plot['industrial_consumption_kw'], 
-                     label='Total Industrial Consumption (kW)', color='black', linewidth=2)
+        # Suavizar a curva de consumo total para melhor visualização
+        # A janela de 8 pontos corresponde a 2 horas (para dados de 15 min)
+        window_size = 8
+        smoothed_consumption = df_plot['industrial_consumption_kw'].rolling(window=window_size, min_periods=1, center=True).mean()
+        axs[1,0].plot(df_plot['days'], smoothed_consumption, 
+                     label='Total Industrial Consumption (kW, Smoothed)', color='black', linewidth=2)
     for i, src in enumerate(used_sources):
         col_name = f'{src}_used_kw'
         if col_name in df_plot.columns:

@@ -64,16 +64,47 @@ class SyntheticDataGenerator:
         # Consumo industrial total (soma exata = total_consumption_kwh)
         total_consumption_kwh = self.industrial_config.total_consumption_kw
         time_res_h = self.sim_config.time_resolution_minutes / 60.0
-        # Gera uma curva oscilante (média 1.0, soma = n)
-        hours = np.arange(n) * self.sim_config.time_resolution_minutes / 60.0
-        daily_cycle = 0.05 * np.sin(2 * np.pi * (hours % 24) / 24)
-        noise = np.random.normal(0, 0.02, n)
-        base_curve = 1.0 + daily_cycle + noise
-        base_curve = np.clip(base_curve, 0.9, 1.1)
-        # Normalizar para soma = 1.0
-        base_curve = base_curve / base_curve.sum()
-        # Multiplicar pelo total desejado em kWh e dividir pelo tempo de cada ponto (h) para obter kW instantâneo
-        total_consumption = (base_curve * total_consumption_kwh) / time_res_h
+        
+        # Perfil de consumo industrial mais realista com turnos e dias da semana
+        time_res_minutes = self.sim_config.time_resolution_minutes
+        points_per_day = (24 * 60) // time_res_minutes
+        points_per_week = points_per_day * 7
+        
+        # Padrão de consumo para um dia útil (ex: 3 turnos)
+        weekday_pattern = np.ones(points_per_day)
+        hours_of_day = np.arange(points_per_day) * time_res_minutes / 60.0
+        # Turno 1 (madrugada): 40% do pico
+        weekday_pattern[(hours_of_day >= 0) & (hours_of_day < 6)] = 0.4
+        # Turno 2 (dia): 100% do pico
+        weekday_pattern[(hours_of_day >= 6) & (hours_of_day < 18)] = 1.0
+        # Turno 3 (noite): 70% do pico
+        weekday_pattern[(hours_of_day >= 18) & (hours_of_day < 24)] = 0.7
+        
+        # Padrão de consumo para fim de semana (ex: 20% do pico)
+        weekend_pattern = np.full(points_per_day, 0.2)
+        
+        # Montar perfil de uma semana
+        weekly_profile = np.zeros(points_per_week)
+        for day in range(7):
+            start_idx = day * points_per_day
+            end_idx = (day + 1) * points_per_day
+            if day < 5: # Seg-Sex
+                weekly_profile[start_idx:end_idx] = weekday_pattern
+            else: # Sab-Dom
+                weekly_profile[start_idx:end_idx] = weekend_pattern
+                
+        # Replicar o perfil semanal para toda a duração da simulação
+        num_weeks = int(np.ceil(n / points_per_week))
+        base_curve = np.tile(weekly_profile, num_weeks)[:n]
+        
+        # Adicionar ruído para realismo
+        noise = np.random.normal(0, 0.05, n)
+        base_curve = base_curve + noise
+        base_curve = np.maximum(0, base_curve) # Evitar consumo negativo
+        
+        # Normalizar a curva para que o consumo total seja igual ao solicitado
+        scale_factor = total_consumption_kwh / (base_curve.sum() * time_res_h)
+        total_consumption = base_curve * scale_factor
         
         # Consumo por fonte (mantém proporção do usuário, soma exata)
         used_profiles = {}
