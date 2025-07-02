@@ -1,8 +1,8 @@
 # proj-BRA-GER
 
-Simulador de perfis energéticos sintéticos para Brasil e Alemanha, com análise de consumo industrial e geração renovável.
+Synthetic energy profile simulator for Brazil and Germany, with industrial consumption analysis and renewable generation.
 
-## Estrutura do Projeto
+## Project Structure
 
 ```
 proj-BRA-GER/
@@ -23,24 +23,36 @@ proj-BRA-GER/
 └── LICENSE                         # Project license
 ```
 
-## Como rodar
+## How to Run
 
-1. Instale as dependências:
-   ```
-   pip install -r requirements.txt
-   ```
+### 1. Install dependencies with [uv](https://github.com/astral-sh/uv) (recommended)
 
-2. Execute o simulador via CLI:
-   ```
-   python src/app_cli.py
-   ```
+If you don't have uv installed:
+```
+curl -Ls https://astral.sh/uv/install.sh | sh
+```
 
-## Sobre
+Then, install the project dependencies:
+```
+uv pip install -r requirements.txt
+```
 
-- Geração de perfis sintéticos de energia (solar, eólica, hidrelétrica, etc).
-- Análise de consumo industrial e visualização automática.
-- Dados e gráficos salvos em `data/synthetic/`.
+### 2. Or install dependencies with pip
+```
+pip install -r requirements.txt
+```
+
+### 3. Run the simulator via CLI
+```
+python src/app_cli.py
+```
+
+## About
+
+- Generation of synthetic energy profiles (solar, wind, hydropower, etc).
+- Industrial consumption analysis and automatic visualization.
+- Data and plots are saved in `data/synthetic/`.
 
 ---
 
-Sinta-se à vontade para adaptar ou expandir conforme o foco do seu projeto!
+Feel free to adapt or expand according to your project's focus!
