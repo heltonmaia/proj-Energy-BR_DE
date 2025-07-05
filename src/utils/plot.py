@@ -1,319 +1,296 @@
+# utils/plot.py
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
+import json
+import matplotlib.dates as mdates
+import locale
+import matplotlib as mpl
 
-# Paleta de cores fixa para fontes
-SOURCE_COLORS = {
-    'solar': 'orange',
-    'wind': 'skyblue',
-    'hydropower': 'green',
-    'biomass': 'brown',
-    'biogas': 'purple',
-    'grid': 'gray',
-}
+# Configura o locale para formatação de moeda brasileira (BRL)
+try:
+    locale.setlocale(locale.LC_ALL, 'pt_BR.UTF-8')
+except locale.Error:
+    print("Warning: Brazilian locale 'pt_BR.UTF-8' not found. Using default for currency formatting.")
 
-def plot_stacked_bar_chart(data_dict, title, ylabel, xlabel="Source", save_path=None, figsize=(12, 6)):
-    """
-    Cria gráfico de barras empilhadas no estilo solicitado.
-    
-    Args:
-        data_dict: Dicionário com dados {source: values}
-        title: Título do gráfico
-        ylabel: Label do eixo Y
-        xlabel: Label do eixo X
-        save_path: Caminho para salvar o gráfico
-        figsize: Tamanho da figura
-    """
-    # Criar DataFrame
-    df = pd.DataFrame(data_dict)
-    
-    # Plotagem
-    plt.figure(figsize=figsize)
-    df.plot(kind='bar', stacked=True, colormap="Set3", edgecolor='black')
-    
-    plt.title(title, fontsize=14)
-    plt.ylabel(ylabel)
-    plt.xlabel(xlabel)
-    plt.xticks(rotation=0)
-    plt.grid(axis='y', linestyle='--', alpha=0.7)
-    plt.legend(title="Source", bbox_to_anchor=(1.05, 1), loc='upper left')
-    
+def plot_real_pld(pattern_loader, region, year, save_path=None):
+    df_real = pattern_loader.df[pattern_loader.df['year'] == year]
+    if df_real.empty:
+        print(f"Warning: No historical data found for year {year}. Skipping real PLD plot.")
+        return
+
+    plt.style.use('seaborn-v0_8-whitegrid')
+    fig, ax = plt.subplots(figsize=(16, 8))
+
+    ax.plot(df_real.index, df_real[region], label=f'Real PLD (BRL/MWh)', color='darkblue')
+
+    ax.set_ylabel('PLD (BRL/MWh)')
+    ax.set_xlabel('Date')
+    ax.set_title(f'Real Historical PLD for {region} - {year}', fontsize=16)
+    ax.legend()
+    ax.grid(True, linestyle='--', alpha=0.6)
+
+    ax.xaxis.set_major_locator(mdates.MonthLocator())
+    ax.xaxis.set_major_formatter(mdates.DateFormatter('%b %Y'))
+    plt.xticks(rotation=45)
+
     plt.tight_layout()
-    
     if save_path:
-        plt.savefig(save_path, dpi=300, bbox_inches='tight')
-        plt.close()
-        print(f"Stacked bar chart saved to: {save_path}")
-    else:
-        plt.show()
-
-def plot_energy_profiles(df, region_name, save_path=None, max_points=1000):
-    # Garantir que timestamp é datetime
-    if not pd.api.types.is_datetime64_any_dtype(df['timestamp']):
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-    # Amostrar se muitos pontos
-    if len(df) > max_points:
-        df_plot = df.iloc[::len(df)//max_points]
-    else:
-        df_plot = df
-    plt.figure(figsize=(14, 7))
-    # Geração
-    plt.plot(df_plot['timestamp'], df_plot['solar_power_kw'], label='Solar Generation (kW)', color='orange', linewidth=1)
-    plt.plot(df_plot['timestamp'], df_plot['wind_power_kw'], label='Wind Generation (kW)', color='skyblue', linewidth=1)
-    plt.plot(df_plot['timestamp'], df_plot['grid_power_kw'], label='Grid Generation (kW)', color='gray', linewidth=1)
-    # Consumo industrial
-    plt.plot(df_plot['timestamp'], df_plot['industrial_consumption_kw'], label='Industrial Consumption (kW)', color='green', linewidth=1.5, linestyle='--')
-    plt.plot(df_plot['timestamp'], df_plot['solar_used_kw'], label='Solar Used (kW)', color='orange', linewidth=1, linestyle=':')
-    plt.plot(df_plot['timestamp'], df_plot['wind_used_kw'], label='Wind Used (kW)', color='skyblue', linewidth=1, linestyle=':')
-    plt.plot(df_plot['timestamp'], df_plot['grid_used_kw'], label='Grid Used (kW)', color='gray', linewidth=1, linestyle=':')
-    plt.xlabel('Timestamp')
-    plt.ylabel('Power (kW)')
-    plt.title(f"Synthetic Energy Profiles - {region_name}")
-    plt.legend()
-    plt.tight_layout()
-    plt.xticks(rotation=30)
-    if save_path:
-        plt.savefig(save_path)
+        plt.savefig(save_path, dpi=150)
         plt.close()
     else:
         plt.show()
 
-def plot_dual_energy_figures(df, country, save_path=None, max_points=1000):
-    """
-    Plots dual figures with energy generation and consumption.
-    Updated to handle data saved as JSON.
-    """
-    import matplotlib.ticker as mtick
-    
-    # Suporte a dados sem timestamp (apenas month e minute_of_month)
-    if 'timestamp' not in df.columns and 'month' in df.columns and 'minute_of_month' in df.columns:
-        # Criar eixo de tempo sintético em dias
-        minutes_per_month = df['minute_of_month'].max() + (df['minute_of_month'].iloc[1] - df['minute_of_month'].iloc[0])
-        df['days'] = (df['month'] - 1) * (minutes_per_month / 1440) + df['minute_of_month'] / 1440
-    else:
-        # Convert timestamp to datetime if necessary
-        if not pd.api.types.is_datetime64_any_dtype(df['timestamp']):
-            df['timestamp'] = pd.to_datetime(df['timestamp'])
-        start_time = df['timestamp'].iloc[0]
-        df['days'] = (df['timestamp'] - start_time).dt.total_seconds() / (24 * 3600)
-    
-    # Sample if too many points
-    if len(df) > max_points:
-        df_plot = df.iloc[::max(1, len(df)//max_points)]
-    else:
-        df_plot = df
-    
-    # Identify available sources
-    power_cols = [col for col in df_plot.columns if col.endswith('_power_kw')]
-    used_cols = [col for col in df_plot.columns if col.endswith('_used_kw')]
-    
-    all_sources = [col.replace('_power_kw','') for col in power_cols]
-    used_sources = [col.replace('_used_kw','') for col in used_cols]
-    
-    # Calcular resolução temporal
-    if 'timestamp' not in df.columns and 'minute_of_month' in df.columns:
-        time_res_h = (df['minute_of_month'].iloc[1] - df['minute_of_month'].iloc[0]) / 60.0
-    else:
-        if len(df) > 1:
-            try:
-                t0 = pd.to_datetime(df['timestamp'].iloc[0])
-                t1 = pd.to_datetime(df['timestamp'].iloc[1])
-                time_res_h = float((t1 - t0).total_seconds()) / 3600.0
-            except Exception:
-                time_res_h = 0.25
-        else:
-            time_res_h = 0.25
-    
-    # Agrupamento mensal neutro
-    if 'month' in df.columns:
-        df['month_group'] = df['month']
-    else:
-        df['month_group'] = df['timestamp'].dt.to_period('M')
-    
-    # Calcular totais mensais
-    monthly_generation = {}
-    monthly_consumption = {}
-    
-    for src in all_sources:
-        col_name = f'{src}_power_kw'
-        if col_name in df.columns:
-            monthly_data = df.groupby('month_group')[col_name].sum() * time_res_h
-            monthly_generation[src] = monthly_data
-    
-    for src in used_sources:
-        col_name = f'{src}_used_kw'
-        if col_name in df.columns:
-            monthly_data = df.groupby('month_group')[col_name].sum() * time_res_h
-            monthly_consumption[src] = monthly_data
-    
-    # Calculate overall totals for percentages
-    total_generated = {}
-    for src in all_sources:
-        if src in monthly_generation:
-            total_generated[src] = float(monthly_generation[src].sum())
-    
-    total_consumed = {}
-    for src in used_sources:
-        if src in monthly_consumption:
-            total_consumed[src] = float(monthly_consumption[src].sum())
-    
-    # Calculate consumption percentages
-    total_consumption_kwh = sum(total_consumed.values())
-    consumption_percentages = {}
-    for src in used_sources:
-        if src in total_consumed and total_consumption_kwh > 0:
-            consumption_percentages[src] = (total_consumed[src] / total_consumption_kwh) * 100
-    
-    # Get price and shares configuration
+def plot_energy_profiles(df, title, save_path=None):
+    df_plot = df.copy()
+    df_plot['timestamp'] = pd.to_datetime(df_plot['timestamp'])
+    df_plot['total_generation'] = df_plot['solar_generation_kw'] + df_plot['wind_generation_kw']
+
+    plt.style.use('seaborn-v0_8-whitegrid')
+    fig, ax = plt.subplots(figsize=(20, 10))
+
+    unique_days = df_plot['timestamp'].dt.normalize().unique()
+
+    for day in unique_days:
+        ax.axvspan(day + pd.Timedelta(hours=18), day + pd.Timedelta(hours=30),
+                   facecolor='#EAF4FF', zorder=0)
+
+    # Encontrar todos os dias únicos
+    all_days = df_plot['timestamp'].dt.normalize().unique()
+    for day in all_days:
+        weekday = pd.Timestamp(day).weekday()
+        if weekday == 5:  # Sábado
+            ax.axvspan(day, day + pd.Timedelta(days=1), facecolor='#FFF9E5', zorder=1)
+        elif weekday == 6:  # Domingo
+            ax.axvspan(day, day + pd.Timedelta(days=1), facecolor='#FFF9E5', zorder=1)
+
+    ax.fill([], [], color='#EAF4FF', label='Night Time')
+    ax.fill([], [], color='#FFF9E5', label='Weekend')
+
+    ax.fill_between(df_plot['timestamp'], df_plot['industrial_consumption_kw'], df_plot['total_generation'],
+                    where=(df_plot['total_generation'] > df_plot['industrial_consumption_kw']),
+                    color='lightgreen', alpha=0.7, interpolate=True, label='Energy Surplus (Self-sufficient)',
+                    zorder=2)
+
+    ax.plot(df_plot['timestamp'], df_plot['solar_generation_kw'], label='Solar Generation (kW)',
+            color='orange', linewidth=2, zorder=3)
+    ax.plot(df_plot['timestamp'], df_plot['wind_generation_kw'], label='Wind Generation (kW)',
+            color='skyblue', linewidth=1.5, zorder=3)
+
+    ax.plot(df_plot['timestamp'], df_plot['grid_used_kw'], label='Grid Power Used (kW)',
+            color='red', linestyle='--', alpha=0.9, linewidth=2.5, zorder=4)
+
+    ax.plot(df_plot['timestamp'], df_plot['industrial_consumption_kw'], label='Industrial Consumption (kW)',
+            color='black', linewidth=2.5, zorder=5)
+
+    ax.set_ylabel('Power (kW)', fontsize=14)
+    ax.set_xlabel('Date and Time', fontsize=14)
+    ax.set_title(title, fontsize=18, pad=20)
+
+    handles, labels = ax.get_legend_handles_labels()
+    label_order = [
+        'Industrial Consumption (kW)',
+        'Solar Generation (kW)',
+        'Wind Generation (kW)',
+        'Grid Power Used (kW)',
+        'Energy Surplus (Self-sufficient)',
+        'Night Time',
+        'Weekend'
+    ]
+    new_handles, new_labels = [], []
+    for label in label_order:
+        if label in labels:
+            index = labels.index(label)
+            new_handles.append(handles[index])
+            new_labels.append(labels[index])
+    ax.legend(new_handles, new_labels, loc='upper right', fontsize=11,
+              frameon=True, facecolor='white', framealpha=0.9)
+
+    # Eixo X: dias da semana em inglês
+    ax.xaxis.set_major_locator(mdates.DayLocator(interval=1))
     try:
-        from core.energy_profile_config import CountryProfileManager, Country
-        sources_cfg, industrial_cfg = CountryProfileManager.get_profile(country)
-        price_unit = 'BRL' if country == Country.BRAZIL else 'EUR'
-        
-        # Calculate prices
-        price_generated = {}
-        for src in all_sources:
-            if src in sources_cfg and src in total_generated:
-                price_generated[src] = float(total_generated[src]) * float(sources_cfg[src].avg_cost) / 1000.0
-        
-        price_consumed = {}
-        for src in used_sources:
-            if src in sources_cfg and src in total_consumed:
-                price_consumed[src] = float(total_consumed[src]) * float(sources_cfg[src].avg_cost) / 1000.0
-        
-        # Get configured shares
-        configured_shares = industrial_cfg.shares
-    except Exception as e:
-        print(f"Warning: Could not load price configuration: {e}")
-        price_unit = 'USD'
-        price_generated = {src: 0.0 for src in all_sources}
-        price_consumed = {src: 0.0 for src in used_sources}
-        configured_shares = {}
-    
-    # Create figure
-    fig, axs = plt.subplots(2, 2, figsize=(18, 10), gridspec_kw={'width_ratios': [3, 1]})
-    
-    # 1. Generation by source (without consumption)
-    ax1 = axs[0,0]
-    for i, src in enumerate(all_sources):
-        col_name = f'{src}_power_kw'
-        if col_name in df_plot.columns:
-            color = SOURCE_COLORS.get(src, f'C{i}')
-            ax1.plot(df_plot['days'], df_plot[col_name], 
-                    label=f'{src.capitalize()} Generation (kW)', color=color, linewidth=1)
-    ax1.set_ylabel('Generation Power (kW)', color='blue')
-    ax1.set_xlabel('Days')
-    ax1.set_title(f'Energy Generation by Source - {country.value.capitalize()}')
-    ax1.legend(loc='upper left', fontsize=9)
-    ax1.grid(True, alpha=0.3)
-    
-    # Helper function to format currency
-    def format_currency(value, unit):
-        if unit == 'BRL':
-            return f'R$ {int(value):,}'.replace(',', '.')
-        elif unit == 'EUR':
-            return f'€ {int(value):,}'.replace(',', '.')
-        else:
-            return f'{int(value):,}'
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('\n%a, %d', locale='C'))
+    except TypeError:
+        ax.xaxis.set_major_formatter(mdates.DateFormatter('\n%a, %d'))
+    ax.xaxis.set_minor_locator(mdates.HourLocator(byhour=[6, 12, 18]))
+    ax.xaxis.set_minor_formatter(mdates.DateFormatter('%Hh'))
 
-    # 1b. Monthly stacked generation bars (upper right panel) - GWh scale
-    if monthly_generation:
-        generation_data = {}
-        bar_colors = []
-        for i, src in enumerate(all_sources):
-            if src in monthly_generation:
-                generation_data[src.capitalize()] = monthly_generation[src].values / 1000000
-                bar_colors.append(SOURCE_COLORS.get(src, f'C{i}'))
-        # Corrigir bug: garantir que só meses completos sejam plotados
-        min_len = min(len(v) for v in generation_data.values()) if generation_data else 0
-        for k in generation_data:
-            generation_data[k] = generation_data[k][:min_len]
-        month_numbers = list(range(1, min_len + 1))
-        df_gen = pd.DataFrame(generation_data, index=month_numbers)
-        df_gen.plot(kind='bar', stacked=True, ax=axs[0,1], color=bar_colors, edgecolor='black')
-        
-        # Add total values on top of bars (in GWh)
-        total_values = df_gen.sum(axis=1)
-        for i, total in enumerate(total_values):
-            axs[0,1].text(i, total, f'{total:.2f} GWh', ha='center', va='bottom', fontsize=8,
-                         bbox=dict(boxstyle="round,pad=0.2", facecolor="white", alpha=0.8))
-        
-        axs[0,1].set_title('Monthly Generation (GWh)')
-        axs[0,1].set_ylabel('GWh')
-        axs[0,1].set_xlabel('Month')
-        axs[0,1].tick_params(axis='x', rotation=0)
-        axs[0,1].grid(axis='y', linestyle='--', alpha=0.7)
-        axs[0,1].legend(title="Source", bbox_to_anchor=(1.05, 1), loc='upper left')
+    ax.tick_params(axis='x', which='major', pad=15, labelsize=12, labelrotation=0)
+    ax.tick_params(axis='x', which='minor', labelsize=10)
+
+    ax.set_ylim(bottom=0)
+    ax.set_xlim(df_plot['timestamp'].iloc[0], df_plot['timestamp'].iloc[-1])
+
+    ax.grid(True, which='major', linestyle='-', linewidth='0.5', color='gray', alpha=0.5)
+    ax.grid(True, which='minor', linestyle=':', linewidth='0.5', color='lightgray', alpha=0.7)
+
+    plt.tight_layout()
+    if save_path:
+        plt.savefig(save_path, dpi=150)
+        plt.close()
+    else:
+        plt.show()
+
+
+def plot_monthly_consumption_summary(df, sim_config, save_path=None):
+    """
+    Creates a stacked bar chart showing total monthly energy consumption (kWh) by source.
+    """
+    print("Generating monthly consumption summary plot...")
     
-    # 2. Detailed temporal consumption
-    if 'industrial_consumption_kw' in df_plot.columns:
-        # Suavizar a curva de consumo total para melhor visualização
-        # A janela de 8 pontos corresponde a 2 horas (para dados de 15 min)
-        window_size = 8
-        smoothed_consumption = df_plot['industrial_consumption_kw'].rolling(window=window_size, min_periods=1, center=True).mean()
-        axs[1,0].plot(df_plot['days'], smoothed_consumption, 
-                     label='Total Industrial Consumption (kW, Smoothed)', color='black', linewidth=2)
-    for i, src in enumerate(used_sources):
-        col_name = f'{src}_used_kw'
-        if col_name in df_plot.columns:
-            color = SOURCE_COLORS.get(src, f'C{i}')
-            axs[1,0].plot(df_plot['days'], df_plot[col_name], 
-                         label=f'{src.capitalize()} Used (kW)', color=color, linewidth=1.5)
-    axs[1,0].set_ylabel('Consumption Power (kW)')
-    axs[1,0].set_xlabel('Days')
-    axs[1,0].set_title('Simulated Industrial Consumption by Source')
-    axs[1,0].legend()
-    axs[1,0].grid(True, alpha=0.3)
+    time_step_hours = sim_config.time_resolution_minutes / 60.0
     
-    # 2b. Monthly stacked consumption bars (lower right panel) - kWh with currency
-    if monthly_consumption:
-        consumption_data = {}
-        bar_colors = []
-        for i, src in enumerate(used_sources):
-            if src in monthly_consumption:
-                consumption_data[src.capitalize()] = monthly_consumption[src].values
-                bar_colors.append(SOURCE_COLORS.get(src, f'C{i}'))
-        min_len = min(len(v) for v in consumption_data.values()) if consumption_data else 0
-        for k in consumption_data:
-            consumption_data[k] = consumption_data[k][:min_len]
-        month_numbers = list(range(1, min_len + 1))
-        df_cons = pd.DataFrame(consumption_data, index=month_numbers)
-        df_cons.plot(kind='bar', stacked=True, ax=axs[1,1], color=bar_colors, edgecolor='black')
-        
-        # Add total values on top of bars (kWh + currency)
-        total_values = df_cons.sum(axis=1)
-        for i, total in enumerate(total_values):
-            # Calculate monthly cost
-            monthly_cost = 0
-            for src in used_sources:
-                if src in monthly_consumption and src in price_consumed:
-                    src_monthly_kwh = monthly_consumption[src].iloc[i]
-                    src_cost_per_kwh = price_consumed[src] / total_consumed[src] if total_consumed[src] > 0 else 0
-                    monthly_cost += src_monthly_kwh * src_cost_per_kwh
-            
-            # Format text with kWh and currency
-            cost_text = format_currency(monthly_cost, price_unit)
-            text = f'{total:.0f} kWh\n{cost_text}'
-            axs[1,1].text(i, total, text, ha='center', va='bottom', fontsize=8,
-                         bbox=dict(boxstyle="round,pad=0.2", facecolor="white", alpha=0.8))
-        
-        total_consumption_kwh = sum(total_consumed.values())
-        total_cost = sum(price_consumed.values())
-        cost_text = format_currency(total_cost, price_unit)
-        title = f'Monthly Consumption (kWh)\nTotal: {total_consumption_kwh:.0f} kWh - {cost_text}'
-        axs[1,1].set_title(title)
-        axs[1,1].set_ylabel('kWh')
-        axs[1,1].set_xlabel('Month')
-        axs[1,1].tick_params(axis='x', rotation=0)
-        axs[1,1].grid(axis='y', linestyle='--', alpha=0.7)
-        axs[1,1].legend(title="Source", bbox_to_anchor=(1.05, 1), loc='upper left')
+    df_plot = df.copy()
+    df_plot['timestamp'] = pd.to_datetime(df_plot['timestamp'])
     
-    # Final formatting
+    df_plot['solar_used_kwh'] = df_plot['solar_used_kw'] * time_step_hours
+    df_plot['wind_used_kwh'] = df_plot['wind_used_kw'] * time_step_hours
+    df_plot['grid_used_kwh'] = df_plot['grid_used_kw'] * time_step_hours
+    
+    df_plot['month'] = df_plot['timestamp'].dt.to_period('M').astype(str)
+    monthly_summary = df_plot.groupby('month')[['solar_used_kwh', 'wind_used_kwh', 'grid_used_kwh']].sum()
+
+    monthly_summary.rename(columns={
+        'solar_used_kwh': 'Solar (On-site)',
+        'wind_used_kwh': 'Wind (On-site)',
+        'grid_used_kwh': 'Grid (Purchased)'
+    }, inplace=True)
+
+    fig, ax = plt.subplots(figsize=(14, 8))
+    monthly_summary.plot(
+        kind='bar', 
+        stacked=True, 
+        ax=ax, 
+        color=['orange', 'skyblue', 'gray'],
+        edgecolor='black'
+    )
+    
+    ax.set_title(f'Monthly Energy Consumption by Source ({sim_config.duration_days // 30} Months)', fontsize=16)
+    ax.set_ylabel('Total Energy Consumed (kWh)')
+    ax.set_xlabel('Month')
+    ax.tick_params(axis='x', rotation=45)
+    ax.grid(False)
+    try:
+        ax.legend(title='Energy Source', loc='upper right')
+    except Exception:
+        ax.legend(title='Energy Source', loc='upper right', bbox_to_anchor=(1.02, 1), borderaxespad=0.)
+
+    y_max = monthly_summary.sum(axis=1).max()
+    ax.set_ylim(0, y_max * 1.20)
+
+    for i, total in enumerate(monthly_summary.sum(axis=1)):
+        ax.text(i, total * 1.01, f'{total:,.0f} kWh', ha='center', va='bottom', fontsize=9, weight='bold')
+    
     plt.tight_layout()
     
     if save_path:
+        plt.savefig(save_path, dpi=150)
+        plt.close()
+    else:
+        plt.show()
+
+def plot_monthly_cost_summary(df, sim_config, save_path=None):
+    """
+    Creates a stacked bar chart showing total monthly costs (BRL) by component.
+    """
+    print("Generating monthly cost summary plot...")
+    
+    df_plot = df.copy()
+    df_plot['timestamp'] = pd.to_datetime(df_plot['timestamp'])
+    
+    df_plot['month'] = df_plot['timestamp'].dt.to_period('M').astype(str)
+    cost_columns = ['cost_solar', 'cost_wind', 'cost_grid_contract', 'cost_grid_spot']
+    monthly_summary = df_plot.groupby('month')[cost_columns].sum()
+
+    monthly_summary.rename(columns={
+        'cost_solar': 'Solar (LCOE)',
+        'cost_wind': 'Wind (LCOE)',
+        'cost_grid_contract': 'Grid (Contract Price)',
+        'cost_grid_spot': 'Grid (Spot Price/PLD)'
+    }, inplace=True)
+
+    fig, ax = plt.subplots(figsize=(14, 8))
+    monthly_summary.plot(
+        kind='bar', 
+        stacked=True, 
+        ax=ax, 
+        color=['orange', 'skyblue', 'dimgray', 'crimson'],
+        edgecolor='black'
+    )
+    
+    ax.set_title(f'Monthly Energy Cost Analysis ({sim_config.duration_days // 30} Months)', fontsize=16)
+    ax.set_ylabel('Total Cost (BRL)')
+    ax.set_xlabel('Month')
+    ax.tick_params(axis='x', rotation=45)
+    ax.grid(False)
+    try:
+        ax.legend(title='Cost Component', loc='upper right')
+    except Exception:
+        ax.legend(title='Cost Component', loc='upper right', bbox_to_anchor=(1.02, 1), borderaxespad=0.)
+
+    y_max = monthly_summary.sum(axis=1).max()
+    ax.set_ylim(0, y_max * 1.10)
+
+    for i, total in enumerate(monthly_summary.sum(axis=1)):
+        ax.text(i, total * 1.01, locale.currency(total, grouping=True), ha='center', va='bottom', fontsize=9, weight='bold')
+
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda x, p: locale.currency(x, symbol=True, grouping=True)))
+    
+    plt.tight_layout()
+    
+    if save_path:
+        plt.savefig(save_path, dpi=150)
+        plt.close()
+    else:
+        plt.show()
+
+def plot_rl_results(rl_result_path, save_path=None):
+    """Plots the results of an RL simulation run."""
+    with open(rl_result_path, 'r') as f:
+        history = json.load(f)
+    
+    steps = [h['step'] for h in history]
+    allocations = np.array([h['allocation_kw'] for h in history])
+    costs = np.array([h['cost'] for h in history])
+    sust_scores = np.array([h['sust_score'] for h in history])
+    rewards = np.array([h['reward'] for h in history])
+    
+    contract_file_path = rl_result_path.replace('.rl_result.json', '.json')
+    with open(contract_file_path, 'r') as f:
+        data = json.load(f)
+    sources = list(data['metadata']['contracts'].keys())
+    
+    fig, axs = plt.subplots(3, 1, figsize=(16, 12), sharex=True)
+    
+    for i, src in enumerate(sources):
+        axs[0].plot(steps, allocations[:, i], label=src.capitalize())
+    axs[0].set_ylabel('Allocated Power (kW)')
+    axs[0].set_title('RL Agent: Power Allocation per Source')
+    axs[0].legend()
+    axs[0].grid(True, alpha=0.3)
+    
+    axs[1].plot(steps, np.cumsum(costs), label='Cumulative Cost', color='red')
+    axs[1].set_ylabel('Cumulative Cost', color='red')
+    axs[1].tick_params(axis='y', labelcolor='red')
+    ax2 = axs[1].twinx()
+    ax2.plot(steps, np.cumsum(sust_scores), label='Cumulative Sustainability', color='green')
+    ax2.set_ylabel('Cumulative Sustainability Score', color='green')
+    ax2.tick_params(axis='y', labelcolor='green')
+    axs[1].set_title('Cumulative Cost and Sustainability Score')
+    axs[1].grid(True, alpha=0.3)
+    
+    axs[2].plot(steps, rewards, label='Reward per Step', color='blue')
+    axs[2].set_ylabel('Reward')
+    axs[2].set_xlabel('Simulation Step')
+    axs[2].set_title('Reward per Step')
+    axs[2].legend()
+    axs[2].grid(True, alpha=0.3)
+    
+    plt.tight_layout()
+    if save_path:
         plt.savefig(save_path, dpi=300, bbox_inches='tight')
         plt.close()
-        print(f"Plot saved to: {save_path}")
+        print(f"RL results plot saved to: {save_path}")
     else:
-        plt.show() 
+        plt.show()

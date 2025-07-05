@@ -104,3 +104,10 @@ This document presents updated, corrected data on electricity generation sources
 - [Bundesnetzagentur – Monitoring Report 2023](https://www.bundesnetzagentur.de/EN/Areas/Energy)
 - [Energy-Charts – Fraunhofer ISE](https://www.energy-charts.info/index.html?l=en&c=DE)
 
+
+
+Fontes reais de preços
+- https://www.ccee.org.br/web/guest/precos/painel-precos
+- relucações https://abraceel.com.br/mercado-livre/#o-papel-da-comercializadora-no-mercado-livre
+
+
