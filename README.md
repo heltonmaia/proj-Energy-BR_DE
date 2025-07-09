@@ -2,67 +2,57 @@
 
 Synthetic energy profile simulator for Brazil and Germany, with industrial consumption analysis and renewable generation.
 
-## Project Structure (Short)
-
-```
-proj-BRA-GER/
-├── src/        # Main source code
-├── data/       # Real and synthetic data
-├── results/    # Results and reports
-├── models/     # Trained models
-├── logs/       # Execution and training logs
-├── tests/      # Automated tests
-├── tmp/        # Temporary files
-├── docs/       # Documentation
-├── .venv/      # Python virtual environment
-├── README.md   # Main documentation
-├── requirements.txt # Project dependencies
-└── LICENSE     # Project license
-```
 
 ## Project Structure
 
 ```
 proj-BRA-GER/
+├── data/                           # Input and output data
+│   ├── real/                       # Collected real-world data
+│   └── synthetic/                  # Synthetic profiles, plots, and contract files
+├── docs/                           # Documentation and project design
+├── logs/                           # Training and evaluation logs (TensorBoard, etc.)
+│   └── PPO_*/                      # RL training runs (subfolders)
+├── models/                         # Trained models and checkpoints
+├── results/                        # Evaluation results and reports
+│   └── price_350/                  # Example of grouped evaluation results
 ├── src/                            # Main source code
+│   ├── app_cli.py                  # Main CLI entry point
+│   ├── _app_ui.py                  # (UI helper, if used)
 │   ├── core/                       # Core simulation logic and models
 │   │   ├── dess_system.py
 │   │   ├── energy_profile_config.py
 │   │   ├── energy_profile_generator.py
 │   │   ├── evaluate.py
 │   │   ├── rl_dess_env.py
-│   │   ├── rl_env.py
 │   │   ├── synthetic_data_generator.py
-│   │   └── train.py
-│   └── utils/                      # Utility functions and visualization
-│       └── plot.py
-├── data/                           # Input and output data
-│   ├── real/                       # Collected real-world data
-│   │   ├── Historico_do_Preco_Horario_*.xlsx
-│   │   ├── Historico_do_Preco_Medio_Mensal_*.xls
-│   │   ├── Historico_do_Preco_Medio_Semanal_*.json/xls
-│   │   └── price_analysis.pdf
-│   └── synthetic/                  # Synthetically generated profiles and plots
-│       ├── *.csv, *.json           # Synthetic data files
-│       └── *.png                   # Plots and visualizations
-├── results/                        # Evaluation results and reports
-│   ├── *.csv
-│   └── *.png
-├── models/                         # Trained models and checkpoints
-│   └── *.zip
-├── logs/                           # Training and evaluation logs
-│   └── PPO_*/
-│       └── events.out.tfevents.*
-├── tests/                          # Unit and integration tests
+│   │   ├── train.py
+│   │   └── __init__.py
+│   ├── utils/                      # Utility functions and visualization
+│   │   ├── plot.py
+│   │   └── __init__.py
+│   └── __init__.py
 ├── tmp/                            # Temporary files and scratch data (ignored)
-├── docs/                           # Documentation and project design
-│   ├── Proposal PIPC CAPES DFG Call 33 2023 Final version (3).pdf
-│   └── synthetic_data_design.md
-├── .venv/                          # Python virtual environment (optional, ignored)
 ├── README.md                       # Main project documentation (this file)
 ├── requirements.txt                # Python package dependencies
 └── LICENSE                         # Project license
 ```
+
+## CLI Main Menu Options
+
+When running `python src/app_cli.py`, the following options are available:
+
+1. **Generate Contract Prices & Validation Plot**  
+   Create contract price JSONs and validation plots for a selected year and region.
+2. **Generate Full Industry Profile (Energy-based)**  
+   Generate a full synthetic energy profile using the contract JSON from option 1.
+3. **Train DESS Management Agent (RL)**  
+   Train a reinforcement learning agent to manage the decentralized energy system.
+4. **Evaluate Trained Agent**  
+   Run evaluation and generate plots for a trained RL agent.
+5. **Clean all __pycache__ folders**  
+   Recursively remove all Python `__pycache__` folders from the project for maintenance.
+0. **Exit**
 
 ## How to Run
 

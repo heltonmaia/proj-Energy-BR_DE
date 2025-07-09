@@ -1,4 +1,4 @@
-# src/app_cli.py
+0# src/app_cli.py
 
 import json
 from pathlib import Path
@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import traceback
 import locale
 import os
+import glob
+import shutil
 
 # Adiciona o diretório raiz ao path para garantir que todos os módulos sejam encontrados
 import sys
@@ -50,8 +52,6 @@ def run_contract_price_generation():
         return
 
     pattern_loader = HistoricalPatternLoader(historical_data_path)
-    # ... (o resto desta função permanece o mesmo que nas versões anteriores) ...
-    # O código foi omitido para brevidade, mas deve ser incluído aqui.
     regions = pattern_loader.regions
     print("\nAvailable Regions for Price Patterns:")
     for i, region in enumerate(regions):
@@ -64,15 +64,59 @@ def run_contract_price_generation():
         print("Invalid selection. Using default region (SOUTHEAST).")
         selected_region = "SOUTHEAST"
 
+    # Pergunta o ano ao usuário
+    try:
+        year_choice = input("Enter the year to extract the price pattern (leave blank for all years): ").strip()
+        year_choice = int(year_choice) if year_choice else None
+    except ValueError:
+        print("Invalid year. Using all available years.")
+        year_choice = None
+
     sim_config = SimulationConfig(
         duration_days=365
     )
-    generator = ContractDataGenerator(get_configs_for_country(sim_config.country), sim_config, pattern_loader.calculate_pattern_for_region(selected_region))
+    if year_choice:
+        pattern = pattern_loader.calculate_pattern_for_region(selected_region, base_year=year_choice)
+    else:
+        pattern = pattern_loader.calculate_pattern_for_region(selected_region)
+
+    # Defina o sufixo do ano para o nome do arquivo
+    year_suffix = f"_{year_choice}" if year_choice else ""
+    sim_config.experiment_name = f"exp{year_suffix}"
+
+    generator = ContractDataGenerator(get_configs_for_country(sim_config.country), sim_config, pattern)
     price_df = generator.generate_contract_profile()
     
     output_dir = project_root / "data" / "synthetic"
     generator.save_data(price_df, output_dir)
     print(f"Data saved to: {output_dir / (sim_config.experiment_name + '.json')}")
+
+    # Debug: Verifique se o DataFrame tem dados e colunas de preço
+    print("\n[DEBUG] price_df head:")
+    print(price_df.head())
+    print("[DEBUG] price_df columns:")
+    print(price_df.columns)
+    if price_df.empty:
+        print("[WARNING] price_df is empty, nothing to plot!")
+    else:
+        any_plotted = False
+        plt.figure(figsize=(14, 6))
+        for col in price_df.columns:
+            if col.startswith('price_'):
+                print(f"[DEBUG] Plotting column: {col}")
+                plt.plot(price_df.index, price_df[col], label=col.replace('price_', '').capitalize())
+                any_plotted = True
+        if not any_plotted:
+            print("[WARNING] No price_ columns found to plot!")
+        plt.title(f"Synthetic Contract Prices ({sim_config.experiment_name})")
+        plt.xlabel("Day")
+        plt.ylabel("Price (BRL/MWh)")
+        plt.legend()
+        plt.tight_layout()
+        plot_path = output_dir / f"{sim_config.experiment_name}_plot.png"
+        plt.savefig(plot_path, dpi=150)
+        plt.close()
+        print(f"Validation plot saved to: {plot_path}")
 
 def run_full_energy_profile_generation():
     """Generates a complete energy profile based on user-defined ENERGY targets."""
@@ -111,8 +155,29 @@ def run_full_energy_profile_generation():
     
     print(f" -> To meet targets, you need ~{required_solar_kw:.0f} kW of Solar and ~{required_wind_kw:.0f} kW of Wind.")
 
-    sim_config.experiment_name = f"{sim_config.country.value}_{months}m_sol{int(required_solar_kw)}k_wind{int(required_wind_kw)}k_profile"
+    # --- NOVO: Perguntar qual arquivo de contratos usar ---
     project_root = Path(__file__).resolve().parent.parent
+    contract_jsons = sorted(glob.glob(str(project_root / 'data' / 'synthetic' / 'exp_*.json')))
+    if not contract_jsons:
+        print("[ERROR] No contract JSON files found. Please run option 1 first.")
+        return
+    print("\nAvailable contract JSON files:")
+    for i, f in enumerate(contract_jsons):
+        print(f"  {i+1}. {os.path.basename(f)}")
+    try:
+        contract_choice = int(input(f"Select contract JSON by number (default: 1): ") or 1)
+        contract_json_path = contract_jsons[contract_choice - 1]
+    except (ValueError, IndexError):
+        print("Invalid selection. Using first contract JSON.")
+        contract_json_path = contract_jsons[0]
+    print(f"Using contract file: {os.path.basename(contract_json_path)}")
+    contract_base = os.path.splitext(os.path.basename(contract_json_path))[0]
+    with open(contract_json_path, 'r') as f:
+        contract_data = json.load(f)
+    contract_df = pd.DataFrame(contract_data['data'])
+
+    # Ajuste o nome dos arquivos gerados para incluir o prefixo do contrato
+    sim_config.experiment_name = f"{contract_base}_exp_{sim_config.country.value}_{months}m_sol{int(required_solar_kw)}k_wind{int(required_wind_kw)}k"
 
     print("\nStep 2: Generating price, generation, and consumption profiles...")
     historical_data_path = project_root / "data" / "real" / "Historico_do_Preco_Medio_Semanal_-_30_de_junho_de_2001_a_30_de_maio_de_2025.json"
@@ -135,7 +200,7 @@ def run_full_energy_profile_generation():
         monthly_variation = 1 + np.random.uniform(-0.05, 0.05)
         profile_df.loc[profile_df['timestamp'].dt.month == month_num, 'industrial_consumption_kw'] *= monthly_variation
     
-    full_df = pd.merge(profile_df, price_df[['day', 'price_grid']], left_on='day_of_year', right_on='day', how='left').ffill()
+    full_df = pd.merge(profile_df, contract_df[['day', 'price_grid']], left_on='day_of_year', right_on='day', how='left').ffill()
     full_df.rename(columns={'price_grid': 'grid_spot_price_brl_per_mwh'}, inplace=True)
     full_df.drop(columns=['day', 'day_of_year'], inplace=True)
     
@@ -257,6 +322,24 @@ def run_training_session():
     print(f"  tensorboard --logdir {log_dir}")
     print("=" * 50 + "\n")
 
+def clean_pycache_folders():
+    """Recursively delete all __pycache__ folders in the project."""
+    project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    removed = 0
+    for dirpath, dirnames, filenames in os.walk(project_root):
+        if "__pycache__" in dirnames:
+            pycache_path = os.path.join(dirpath, "__pycache__")
+            try:
+                shutil.rmtree(pycache_path)
+                print(f"Removed: {pycache_path}")
+                removed += 1
+            except Exception as e:
+                print(f"[ERROR] Could not remove {pycache_path}: {e}")
+    if removed == 0:
+        print("No __pycache__ folders found.")
+    else:
+        print(f"Total __pycache__ folders removed: {removed}")
+
 
 def main():
     """Main function that displays the menu and directs to other functions."""
@@ -269,7 +352,8 @@ def main():
         print("  1. Generate Contract Prices & Validation Plot")
         print("  2. Generate Full Industry Profile (Energy-based)")
         print("  3. Train DESS Management Agent (RL)")
-        print("  4. Evaluate Trained Agent") # <-- NOVA OPÇÃO
+        print("  4. Evaluate Trained Agent")
+        print("  5. Clean all __pycache__ folders")
         print("  0. Exit")
         print("-"*50)
         choice = input("Select an option: ").strip()
@@ -294,16 +378,17 @@ def main():
                 traceback.print_exc()
         elif choice == '4':
             try:
-                # Chama a função de avaliação importada
                 run_evaluation()
             except Exception as e:
                 print(f"\n[ERROR] Evaluation failed: {e}")
                 traceback.print_exc()
+        elif choice == '5':
+            clean_pycache_folders()
         elif choice == '0':
             print("Exiting.")
             break
         else:
-            print("Invalid option. Please enter 1, 2, 3, 4 or 0.")
+            print("Invalid option. Please enter 1, 2, 3, 4, 5 or 0.")
 
 if __name__ == "__main__":
     main()
