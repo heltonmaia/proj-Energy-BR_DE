@@ -1,4 +1,4 @@
-# proj-BRA-GER
+# proj-Energy-BR_DE/
 
 Synthetic energy profile simulator for Brazil and Germany, with industrial consumption analysis and renewable generation.
 
