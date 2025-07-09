@@ -6,7 +6,7 @@ Synthetic energy profile simulator for Brazil and Germany, with industrial consu
 ## Project Structure
 
 ```
-proj-BRA-GER/
+proj-Energy-BR_DE/
 ├── data/                           # Input and output data
 │   ├── real/                       # Collected real-world data
 │   └── synthetic/                  # Synthetic profiles, plots, and contract files
