@@ -1,0 +1,26 @@
+{
+  "battery_type": "li_ion_500kwh",
+  "industrial_profile": "medium_metallurgy",
+  "solar_system": "medium_1000kw",
+  "climate_region": "southeast_sp",
+  "simulation_days": 30,
+  "analysis_days": 30,
+  "reward_weights": {
+    "cost_reduction": 1.0,
+    "battery_health": 0.3,
+    "grid_stability": 0.2,
+    "temperature_penalty": 0.5
+  },
+  "tariff_structure": {
+    "peak": 0.85,
+    "intermediate": 0.65,
+    "off_peak": 0.45,
+    "weekend": 0.35
+  },
+  "training": {
+    "algorithm": "ppo",
+    "total_timesteps": 100000,
+    "eval_freq": 10000,
+    "n_eval_episodes": 5
+  }
+}
