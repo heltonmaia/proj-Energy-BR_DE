@@ -41,7 +41,6 @@ battery-thermal-rl/
 │   │   └── battery_thermal_env.py # Gymnasium environment
 │   ├── core/               # Core functionalities
 │   └── utils/              # Utilities
-├── example_usage.py        # Complete demonstration
 ├── requirements.txt        # Dependencies
 ├── docs/                   # Mathematical documentation
 │   ├── mathematical_modeling.md    # Complete mathematical tutorial
@@ -99,10 +98,7 @@ python cli.py info status
 
 ### 2. Quick Start
 ```bash
-# Complete demo
-python example_usage.py
-
-# OR using CLI - Generate climate data for different regions
+# Generate climate data for different regions
 python cli.py climate generate --region southeast_sp --days 30 --output data/sp_climate.csv
 python cli.py climate generate --region northeast_rn --days 30 --output data/rn_climate.csv
 

@@ -22,10 +22,13 @@ make test
 ## Quick Demo
 
 ```bash
-# Run complete demonstration
-python example_usage.py
-# OR using make
+# Run system demonstration
 make demo
+
+# OR individual commands
+python cli.py info status
+python cli.py climate generate --region southeast_sp --days 7 --output data/demo_climate.csv
+python cli.py battery simulate --type li_ion_500kwh --temperature 25 --hours 4
 ```
 
 ## CLI Usage Examples

@@ -12,7 +12,7 @@ Synthetic energy profile simulator with RL-based DESS (Decentralized Energy Supp
 - **Regions**: Brazil & Germany energy systems comparison
 - **Key Features**: Synthetic data generation, cost optimization, grid analysis
 
-### 🌡️ [Battery Thermal RL](projects/battery-thermal-rl/) 🚧
+### 🌡️ [Battery Thermal RL](projects/battery-thermal-rl/)
 Projeto futuro para modelagem de temperatura de baterias e otimização com RL.
 
 - **Focus**: Controle de temperatura, prevenção de degradação
@@ -91,6 +91,3 @@ tensorboard --logdir projects/[project-name]/logs/
 
 Each project has independent development cycles but shares common utilities. See individual project READMEs for specific contribution guidelines.
 
----
-
-*Multi-project research repository for energy systems optimization using reinforcement learning*

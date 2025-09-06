@@ -106,10 +106,12 @@ evaluate:
 		echo "No trained model found! Run 'make train' first."; \
 	fi
 
-# Testing and demo
+# Testing
 demo:
-	@echo "Running complete demonstration..."
-	python example_usage.py
+	@echo "Running system demonstration..."
+	python cli.py info status
+	python cli.py climate generate --region southeast_sp --days 7 --output data/demo_climate.csv
+	python cli.py battery simulate --type li_ion_500kwh --temperature 25 --hours 4
 
 test-env:
 	@echo "Testing RL environment..."
