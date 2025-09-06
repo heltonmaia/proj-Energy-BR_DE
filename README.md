@@ -1,108 +1,96 @@
-# proj-Energy-BR_DE/
+# Energy Systems Research - RL & Optimization
 
-Synthetic energy profile simulator for Brazil and Germany, with industrial consumption analysis and renewable generation.
+Multi-project repository for energy systems research using reinforcement learning and optimization techniques, focusing on Brazil and Germany energy markets.
 
+## Projects Overview
+
+### 🔋 [Energy Profile RL](projects/energy-profile-rl/)
+Synthetic energy profile simulator with RL-based DESS (Decentralized Energy Supply System) management.
+
+- **Focus**: Industrial energy optimization, DESS management
+- **RL Algorithm**: PPO for battery, electrolyzer, and fuel cell control
+- **Regions**: Brazil & Germany energy systems comparison
+- **Key Features**: Synthetic data generation, cost optimization, grid analysis
+
+### 🌡️ [Battery Thermal RL](projects/battery-thermal-rl/) 🚧
+Projeto futuro para modelagem de temperatura de baterias e otimização com RL.
+
+- **Focus**: Controle de temperatura, prevenção de degradação
+- **Status**: Em desenvolvimento - estrutura básica criada
+- **Objetivo**: Estratégias de gerenciamento térmico baseadas em RL
 
 ## Project Structure
 
 ```
-
 proj-Energy-BR_DE/
-├── data/                           # Input and output data
-│   ├── real/                       # Collected real-world data
-│   └── synthetic/                  # Synthetic profiles, plots, and contract files
-├── docs/                           # Documentation and project design
-├── logs/                           # Training and evaluation logs (TensorBoard, etc.)
-│   └── PPO_*/                      # RL training runs (subfolders)
-├── models/                         # Trained models and checkpoints
-├── results/                        # Evaluation results and reports
-│   └── price_350/                  # Example of grouped evaluation results
-├── src/                            # Main source code
-│   ├── app_cli.py                  # Main CLI entry point
-│   ├── _app_ui.py                  # (UI helper, if used)
-│   ├── core/                       # Core simulation logic and models
-│   │   ├── dess_system.py
-│   │   ├── energy_profile_config.py
-│   │   ├── energy_profile_generator.py
-│   │   ├── evaluate.py
-│   │   ├── rl_dess_env.py
-│   │   ├── synthetic_data_generator.py
-│   │   ├── train.py
-│   │   └── __init__.py
-│   ├── utils/                      # Utility functions and visualization
-│   │   ├── plot.py
-│   │   └── __init__.py
-│   └── __init__.py
-├── tmp/                            # Temporary files and scratch data (ignored)
-├── README.md                       # Main project documentation (this file)
-├── requirements.txt                # Python package dependencies
-└── LICENSE                         # Project license
+├── projects/
+│   ├── energy-profile-rl/          # DESS management & energy profiles
+│   └── battery-thermal-rl/         # Battery thermal optimization (em desenvolvimento)
+├── requirements-common.txt         # Dependências compartilhadas
+└── README.md                       # Este arquivo de overview
 ```
 
-## CLI Main Menu Options
+## Getting Started
 
-When running `python src/app_cli.py`, the following options are available:
-
-1. **Generate Contract Prices & Validation Plot**  
-   Create contract price JSONs and validation plots for a selected year and region.
-2. **Generate Full Industry Profile (Energy-based)**  
-   Generate a full synthetic energy profile using the contract JSON from option 1.
-3. **Train DESS Management Agent (RL)**  
-   Train a reinforcement learning agent to manage the decentralized energy system.
-4. **Evaluate Trained Agent**  
-   Run evaluation and generate plots for a trained RL agent.
-5. **Clean all __pycache__ folders**  
-   Recursively remove all Python `__pycache__` folders from the project for maintenance.
-0. **Exit**
-
-## How to Run
-
-### 1. Install dependencies with [uv](https://github.com/astral-sh/uv) (recommended)
-
-If you don't have uv installed:
-```
-curl -Ls https://astral.sh/uv/install.sh | sh
+### 1. Install Common Dependencies
+```bash
+pip install -r requirements-common.txt
 ```
 
-Then, install the project dependencies:
-```
-uv pip install -r requirements.txt
-```
+### 2. Choose Your Project
 
-### 2. Or install dependencies with pip
-```
+#### Energy Profile RL (DESS Management)
+```bash
+cd projects/energy-profile-rl/
 pip install -r requirements.txt
-```
-
-### 3. Run the simulator via CLI
-```
 python src/app_cli.py
 ```
 
-## About
+#### Battery Thermal RL (Em Desenvolvimento)
+```bash
+cd projects/battery-thermal-rl/
+pip install -r requirements.txt
+# Aguardando implementação
+```
 
-- Generation of synthetic energy profiles (solar, wind, hydropower, etc).
-- Industrial consumption analysis and automatic visualization.
-- Data and plots are saved in `data/synthetic/`.
+### 3. Alternative: Use uv (recommended)
+```bash
+curl -Ls https://astral.sh/uv/install.sh | sh
+uv pip install -r requirements-common.txt
+```
 
-## Visualizing Training with TensorBoard
+## Research Focus
 
-To monitor and visualize the training process, you can use TensorBoard. If you trained your model with Stable Baselines3 and set the `tensorboard_log` parameter, logs will be saved (e.g., in `ppo_dess_tensorboard/`).
+### Energy Systems Modeling
+- **Synthetic energy profile generation** for solar, wind, hydropower
+- **Brazil vs Germany** energy system comparison and analysis
+- **Industrial consumption patterns** and grid reliability studies
+- **Renewable curtailment** and transmission bottleneck modeling
 
-1. Install TensorBoard (if not already installed):
-   ```
-   pip install tensorboard
-   ```
+### Reinforcement Learning Applications
+- **DESS optimization**: Battery, electrolyzer, fuel cell management
+- **Cost minimization**: Operational cost reduction while ensuring energy supply
+- **Thermal management**: (Planejado) Battery temperature control and degradation prevention
+- **Safety optimization**: (Planejado) Thermal safety constraints and performance trade-offs
 
-2. Run TensorBoard pointing to your log directory:
-   ```
-   tensorboard --logdir log/
-   ```
+### Technical Innovations
+- **Multi-agent RL** for complex energy systems
+- **Physics-informed models** for realistic battery and thermal dynamics
+- **Real-time optimization** for industrial energy management
+- **Comparative analysis** across different energy markets and technologies
 
-3. Open your browser and go to:
-   ```
-   http://localhost:6006
-   ```
+## Monitoring & Visualization
 
-You will be able to visualize training metrics, rewards, losses, and more in real time.
+All projects support TensorBoard monitoring:
+```bash
+tensorboard --logdir projects/[project-name]/logs/
+# Open browser: http://localhost:6006
+```
+
+## Contributing
+
+Each project has independent development cycles but shares common utilities. See individual project READMEs for specific contribution guidelines.
+
 ---
+
+*Multi-project research repository for energy systems optimization using reinforcement learning*
