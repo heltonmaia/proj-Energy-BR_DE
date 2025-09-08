@@ -2,6 +2,18 @@
 
 Get started with Battery Thermal RL in minutes!
 
+## 🎯 Two Ways to Use the System
+
+**📋 Interactive Menu Mode (Recommended for beginners)**
+- Start with: `python cli.py` or `python cli.py menu`
+- Navigate with numbers and get guided assistance
+- Perfect for exploration and learning
+
+**⚡ Command-Line Mode (Advanced users)**  
+- Direct commands: `python cli.py climate generate --region southeast_sp`
+- Batch operations: `python cli.py preset dev-quick`
+- Perfect for automation and scripting
+
 ## Installation
 
 ```bash
@@ -10,20 +22,29 @@ cd projects/battery-thermal-rl
 
 # Install dependencies
 pip install -r requirements.txt
-# OR using make
-make install
+# OR using preset workflow
+python cli.py preset install
 
 # Test installation
 python cli.py info status
-# OR using make
-make test
+# OR using preset workflow
+python cli.py preset test
 ```
 
 ## Quick Demo
 
+### 📋 Interactive Menu Way
+```bash
+# Start interactive menu
+python cli.py
+
+# Navigate to: 6. ⚡ Preset Workflows → 1. 🚀 Quick start demo
+```
+
+### ⚡ Command-Line Way
 ```bash
 # Run system demonstration
-make demo
+python cli.py preset demo
 
 # OR individual commands
 python cli.py info status
@@ -84,7 +105,7 @@ python cli.py rl test --steps 100 --random-actions
 ### 5. Analysis & Visualization
 ```bash
 # Generate analysis report
-python cli.py analysis report --config config.json --output report.html
+python cli.py analysis report --output report.html
 
 # Create plots (if matplotlib installed)
 python cli.py analysis plot --type climate --data data/sp_climate.csv --output climate_plot.png
@@ -93,48 +114,58 @@ python cli.py analysis plot --type climate --data data/sp_climate.csv --output c
 python cli.py analysis optimize --battery-type li_ion_500kwh --days 30
 ```
 
-## Using Make Commands
+## Using Preset Commands
 
-For convenience, use the provided Makefile:
+For convenience, use the built-in preset workflows (replaces Makefile):
 
 ```bash
-# Show all available commands
-make help
+# Show all available preset workflows
+python cli.py preset
 
 # Quick setup and demo
-make dev-quick
+python cli.py preset dev-quick
 
 # Generate all climate data
-make climate-all
+python cli.py preset climate-all
 
 # Train and evaluate agent
-make train
-make evaluate
+python cli.py preset train
+python cli.py preset evaluate
 
 # Generate analysis report
-make report
+python cli.py preset report
 
 # Clean output files
-make clean
+python cli.py preset clean
+
+# Complete development workflows
+python cli.py preset dev-setup     # Setup: install + test + data
+python cli.py preset dev-full      # Full development cycle
+python cli.py preset benchmark     # Multi-configuration benchmark
 ```
+
+## Output Organization
+
+The system automatically organizes all results in the `outputs/` directory:
+
+- `outputs/reports/` - HTML analysis reports
+- `outputs/plots/` - Generated visualizations (PNG files)
+- `outputs/simulations/` - Simulation results (CSV files)
+- `outputs/evaluations/` - RL agent evaluation results (JSON files)
 
 ## Configuration
 
-Edit `config.json` to customize system parameters:
+All parameters are configured via CLI arguments. For example:
 
-```json
-{
-  "battery_type": "li_ion_500kwh",
-  "industrial_profile": "medium_metallurgy",
-  "climate_region": "southeast_sp",
-  "simulation_days": 30,
-  "reward_weights": {
-    "cost_reduction": 1.0,
-    "battery_health": 0.3,
-    "grid_stability": 0.2,
-    "temperature_penalty": 0.5
-  }
-}
+```bash
+# Customize battery type and region
+python cli.py rl train --battery-type li_ion_500kwh --climate-region northeast_rn --steps 50000
+
+# Customize industrial profile and analysis period
+python cli.py industrial simulate --profile medium_food --climate-region south_rs --days 90
+
+# All options available via --help
+python cli.py rl train --help
 ```
 
 ## Next Steps

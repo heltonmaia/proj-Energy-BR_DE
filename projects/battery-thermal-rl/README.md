@@ -31,25 +31,32 @@ Optimization (Charge/Discharge)
 
 ```
 battery-thermal-rl/
-├── src/
-│   ├── models/              # System models
-│   │   ├── battery.py       # Battery model with thermal management
+├── src/                    # Source code
+│   ├── models/             # System models
+│   │   ├── battery.py      # Battery model with thermal management
 │   │   └── industrial_system.py # Industrial system + solar
-│   ├── data/               # Data and generators
+│   ├── data/               # Data generators
 │   │   └── climate_data.py # Brazilian climate data
 │   ├── rl/                 # Reinforcement Learning
 │   │   └── battery_thermal_env.py # Gymnasium environment
 │   ├── core/               # Core functionalities
 │   └── utils/              # Utilities
-├── requirements.txt        # Dependencies
+├── data/                   # Generated climate data
+├── models/                 # Trained RL models
+├── outputs/                # All analysis results
+│   ├── reports/            # HTML analysis reports
+│   ├── plots/              # Generated visualizations
+│   ├── simulations/        # Simulation results (CSV)
+│   └── evaluations/        # RL evaluation results
+├── logs/                   # Training logs (TensorBoard)
 ├── docs/                   # Mathematical documentation
 │   ├── mathematical_modeling.md    # Complete mathematical tutorial
 │   ├── mathematical_appendix.md    # Advanced theory and derivations
 │   └── README.md           # Documentation guide
-├── config.json             # Configuration example
-├── quick_start.md          # Quick start guide
-├── Makefile               # Convenient commands
-└── README.md              # This file
+├── cli.py                  # Main CLI interface
+├── quick_start.md          # Quick start guide  
+├── requirements.txt        # Dependencies
+└── README.md               # This file
 ```
 
 ## Implemented Features
@@ -96,7 +103,23 @@ pip install -r requirements.txt
 python cli.py info status
 ```
 
-### 2. Quick Start
+### 2. Interactive Menu Mode (Recommended for Beginners)
+```bash
+# Start interactive menu (default when no command provided)
+python cli.py
+
+# Or explicitly start menu mode
+python cli.py menu
+```
+
+The interactive menu provides an intuitive interface with:
+- 📋 **Main menu** with 7 categories
+- 🔄 **Navigation** between submenus
+- ✅ **Input validation** and defaults
+- 📝 **Step-by-step guidance** for all operations
+- 🎨 **Visual feedback** with emojis and progress indicators
+
+### 3. Command-Line Mode (Advanced Users)
 ```bash
 # Generate climate data for different regions
 python cli.py climate generate --region southeast_sp --days 30 --output data/sp_climate.csv
@@ -121,33 +144,39 @@ The system includes a comprehensive CLI with the following commands:
 - **RL**: `python cli.py rl train/evaluate/test`
 - **Analysis**: `python cli.py analysis report/plot/optimize`
 - **Info**: `python cli.py info status/list/config`
+- **Menu**: `python cli.py menu` (Interactive mode)
 
-### 4. Using Make (Batch Operations)
+### 4. Using Preset Workflows (Replaces Makefile)
 ```bash
-# Show all available commands
-make help
+# Show all available preset workflows
+python cli.py preset
 
-# Quick development cycle (setup + train + evaluate)
-make dev-quick
+# Quick development cycle (setup + train + evaluate + report)
+python cli.py preset dev-quick
 
 # Generate climate data for all Brazilian regions
-make climate-all
+python cli.py preset climate-all
 
 # Compare battery types across temperature ranges
-make battery-compare
+python cli.py preset battery-compare
 
 # Train and evaluate RL agents
-make train          # Quick training (10k steps)
-make train-full     # Full training (100k steps) 
-make evaluate       # Evaluate best model
+python cli.py preset train          # Quick training (10k steps)
+python cli.py preset train-full     # Full training (100k steps) 
+python cli.py preset evaluate       # Evaluate best model
 
 # Generate comprehensive analysis
-make report         # HTML report
-make plot           # Generate visualizations
+python cli.py preset report         # HTML report → outputs/reports/
+python cli.py preset plot           # Generate visualizations → outputs/plots/
 
 # Clean workspace
-make clean          # Remove all outputs
-make clean-models   # Remove only trained models
+python cli.py preset clean          # Remove all outputs
+python cli.py preset clean-models   # Remove only trained models
+
+# Complete workflows
+python cli.py preset dev-setup      # Setup: install + test + data generation
+python cli.py preset dev-full       # Full cycle: setup + train-full + analysis
+python cli.py preset benchmark      # Multi-configuration benchmark
 ```
 
 ### 5. Programmatic Usage
@@ -221,7 +250,7 @@ python cli.py battery compare --types li_ion_500kwh na_ion_200kwh --temperature-
 ### Research & Analysis
 ```bash
 # Compare performance across all Brazilian regions
-make climate-all
+python cli.py preset climate-all
 python cli.py analysis optimize --climate-region northeast_rn --days 90
 python cli.py analysis optimize --climate-region south_rs --days 90
 
@@ -234,7 +263,7 @@ python cli.py rl evaluate --model models/rn_agent.zip --episodes 10
 ```bash
 # ROI analysis for different regions and battery configurations
 python cli.py industrial economics --profile medium_metallurgy --days 365
-python cli.py analysis report --config config.json --output economic_analysis.html
+python cli.py preset report    # Quick analysis report generation
 ```
 
 ## Next Steps
