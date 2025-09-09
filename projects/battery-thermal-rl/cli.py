@@ -1368,16 +1368,14 @@ Examples:
                 elif choice == '1':
                     self.climate_menu()
                 elif choice == '2':
-                    self.battery_menu()
+                    self.industrial_battery_menu()
                 elif choice == '3':
-                    self.industrial_menu()
-                elif choice == '4':
                     self.rl_menu()
-                elif choice == '5':
+                elif choice == '4':
                     self.analysis_menu()
-                elif choice == '6':
+                elif choice == '5':
                     self.preset_menu()
-                elif choice == '7':
+                elif choice == '6':
                     self.info_menu()
                 else:
                     print("❌ Invalid choice. Please try again.")
@@ -1398,16 +1396,15 @@ Examples:
         print("📋 MAIN MENU")
         print("-"*60)
         print("1. 🌤️  Climate Data")
-        print("2. 🔋 Battery Simulation") 
-        print("3. 🏭 Industrial System")
-        print("4. 🤖 Reinforcement Learning")
-        print("5. 📊 Analysis & Reports")
-        print("6. ⚡ Preset Workflows")
-        print("7. ℹ️  System Information")
+        print("2. 🏭 Industrial Battery System") 
+        print("3. 🤖 Reinforcement Learning")
+        print("4. 📊 Analysis & Reports")
+        print("5. ⚡ Preset Workflows")
+        print("6. ℹ️  System Information")
         print("0. 🚪 Exit")
         print("-"*60)
         try:
-            return input("Select option (0-7): ").strip()
+            return input("Select option (0-6): ").strip()
         except EOFError:
             return '0'  # Default to exit on EOF
     
@@ -1445,64 +1442,43 @@ Examples:
             else:
                 print("❌ Invalid choice. Please try again.")
                 
-    def battery_menu(self):
-        """Battery simulation submenu"""
+    def industrial_battery_menu(self):
+        """Integrated industrial battery system submenu"""
         while True:
-            print("\n" + "-"*50)
-            print("🔋 BATTERY SIMULATION MENU")
-            print("-"*50)
-            print("1. 🌡️  Simulate with climate data (realistic)")
-            print("2. ⚖️  Compare battery types")  
-            print("3. 📋 List available battery types")
-            print("4. 🌡️  Temperature performance test")
-            print("5. 📊 Plot battery simulation results")
+            print("\n" + "-"*60)
+            print("🏭 INDUSTRIAL BATTERY SYSTEM MENU")
+            print("-"*60)
+            print("1. 🏭 Complete industrial simulation (Industry + Battery + Solar)")
+            print("2. 💰 Economic analysis with ROI calculations")  
+            print("3. ⚖️  Compare different battery types for industry")
+            print("4. 🌡️  Temperature performance test for batteries")
+            print("5. 📊 Plot industrial battery simulation results")
+            print("6. 📋 List available industrial profiles")
+            print("7. 📋 List available battery types")
             print("0. ← Back to main menu")
-            print("-"*50)
+            print("-"*60)
             
-            choice = input("Select option (0-5): ").strip()
+            choice = input("Select option (0-7): ").strip()
             
             if choice == '0':
                 break
             elif choice == '1':
-                self.menu_simulate_battery()
+                self.menu_simulate_integrated_industrial_battery()
             elif choice == '2':
-                self.menu_compare_batteries()
+                self.menu_industrial_economic_analysis()
             elif choice == '3':
-                self.menu_list_batteries()
+                self.menu_compare_batteries_for_industry()
             elif choice == '4':
                 self.menu_battery_temperature_test()
             elif choice == '5':
-                self.menu_plot_battery_results()
+                self.menu_plot_industrial_battery_results()
+            elif choice == '6':
+                self.menu_list_industrial_profiles()
+            elif choice == '7':
+                self.menu_list_batteries()
             else:
                 print("❌ Invalid choice. Please try again.")
                 
-    def industrial_menu(self):
-        """Industrial system submenu"""
-        while True:
-            print("\n" + "-"*50)
-            print("🏭 INDUSTRIAL SYSTEM MENU")
-            print("-"*50)
-            print("1. Simulate industrial system")
-            print("2. Economic analysis")
-            print("3. List industrial profiles")
-            print("4. 📊 Plot industrial simulation results")
-            print("0. ← Back to main menu")
-            print("-"*50)
-            
-            choice = input("Select option (0-4): ").strip()
-            
-            if choice == '0':
-                break
-            elif choice == '1':
-                self.menu_simulate_industrial()
-            elif choice == '2':
-                self.menu_industrial_economics()
-            elif choice == '3':
-                self.menu_list_industrial_profiles()
-            elif choice == '4':
-                self.menu_plot_industrial_results()
-            else:
-                print("❌ Invalid choice. Please try again.")
                 
     def rl_menu(self):
         """Reinforcement Learning submenu"""
@@ -3266,6 +3242,384 @@ Humidity:
         for i, profile in enumerate(profiles, 1):
             print(f"  {i}. {profile}")
         input("\nPress Enter to continue...")
+    
+    # Integrated Industrial Battery System Functions
+    def menu_simulate_integrated_industrial_battery(self):
+        """Complete simulation: Industrial system + Battery + Solar + Climate data"""
+        print("\n🏭 Complete Industrial Battery System Simulation")
+        print("This simulation integrates: Industry → Battery → Solar → Climate")
+        
+        # Get all required inputs
+        print("\n📋 Configuration:")
+        profile = self.get_industrial_profile_input("Industrial profile", "medium_metallurgy")
+        battery_type = self.get_battery_type_input("Battery type", "li_ion_500kwh")
+        region = self.get_region_input("Climate region", "southeast_sp")
+        solar_system = self.get_solar_system_input("Solar system", "medium_1000kw")
+        days = int(self.get_user_input("Number of days", "7"))
+        initial_soc = float(self.get_user_input("Initial battery SOC (0-1)", "0.5"))
+        
+        # Generate output filename
+        filename = f"integrated_{profile}_{battery_type}_{region}_{days}d.csv"
+        output_path = self.outputs_dir / "industrial_system" / filename
+        
+        print(f"\n⏳ Running complete simulation...")
+        print(f"🏭 Industry: {profile}")
+        print(f"🔋 Battery: {battery_type} (SOC: {initial_soc})")
+        print(f"☀️ Solar: {solar_system}")
+        print(f"🌍 Region: {region}")
+        print(f"📅 Period: {days} days")
+        
+        try:
+            # Generate climate data for the simulation
+            from datetime import datetime
+            import pandas as pd
+            from src.data.climate_data import BrazilianClimateData
+            from src.models.battery import INDUSTRIAL_BATTERY_CONFIGS
+            from src.models.industrial_system import IndustrialEnergySystem, TYPICAL_SOLAR_SYSTEMS
+            
+            # Setup components
+            climate_gen = BrazilianClimateData(region)
+            start_date = datetime(2024, 1, 15)  # Mid-January start
+            climate_data = climate_gen.generate_hourly_data(start_date, days)
+            
+            battery_specs = INDUSTRIAL_BATTERY_CONFIGS[battery_type]
+            solar_specs = TYPICAL_SOLAR_SYSTEMS[solar_system]
+            industrial_system = IndustrialEnergySystem(profile, solar_specs)
+            
+            # Initialize battery
+            from src.models.battery import BatteryModel
+            battery = BatteryModel(battery_specs)
+            battery.soc = initial_soc
+            
+            # Run integrated simulation
+            results = []
+            for hour in range(len(climate_data)):
+                row = climate_data.iloc[hour]
+                current_time = start_date + pd.Timedelta(hours=hour)
+                
+                # Get industrial demand and solar generation
+                demand = industrial_system.get_demand_profile(current_time)
+                solar_gen = industrial_system.calculate_solar_generation(
+                    row['solar_irradiance_kw_m2'], row['temperature_c']
+                )
+                
+                # Simple battery logic: charge when excess solar, discharge when deficit
+                energy_balance = solar_gen - demand
+                
+                if energy_balance > 100:  # Excess solar > 100kW
+                    # Charge battery with available excess
+                    charge_power = min(energy_balance * 0.8, battery_specs.max_charge_rate_kw)
+                    if battery.soc < 0.95:  # Don't overcharge
+                        battery.charge(charge_power, row['temperature_c'], 1.0)
+                        battery_action = "charge"
+                        battery_power = charge_power
+                    else:
+                        battery_action = "hold"
+                        battery_power = 0
+                elif energy_balance < -100:  # Deficit > 100kW
+                    # Discharge battery to help meet demand
+                    discharge_power = min(abs(energy_balance) * 0.6, battery_specs.max_discharge_rate_kw)
+                    if battery.soc > 0.15:  # Don't over-discharge
+                        battery.discharge(discharge_power, row['temperature_c'], 1.0)
+                        battery_action = "discharge"
+                        battery_power = discharge_power
+                    else:
+                        battery_action = "hold"
+                        battery_power = 0
+                else:
+                    battery_action = "hold"
+                    battery_power = 0
+                
+                # Calculate energy balance with battery
+                if battery_action == "charge":
+                    net_demand = demand + battery_power
+                    net_solar = solar_gen
+                elif battery_action == "discharge":
+                    net_demand = demand
+                    net_solar = solar_gen + battery_power
+                else:
+                    net_demand = demand
+                    net_solar = solar_gen
+                
+                # Calculate final grid interaction
+                grid_import = max(0, net_demand - net_solar)
+                grid_export = max(0, net_solar - net_demand)
+                self_consumption = min(net_demand, net_solar)
+                
+                # Get electricity price and calculate costs
+                price = industrial_system.get_electricity_price(current_time)
+                cost_import = grid_import * price
+                revenue_export = grid_export * price * 0.7  # 70% compensation
+                net_cost = cost_import - revenue_export
+                
+                # Store results
+                results.append({
+                    'timestamp': current_time,
+                    'hour': hour,
+                    'ambient_temp': row['temperature_c'],
+                    'solar_irradiance': row['solar_irradiance_kw_m2'],
+                    'demand_kw': demand,
+                    'solar_generation_kw': solar_gen,
+                    'battery_soc': battery.soc,
+                    'battery_temp': battery.temperature,
+                    'battery_action': battery_action,
+                    'battery_power_kw': battery_power,
+                    'grid_import_kw': grid_import,
+                    'grid_export_kw': grid_export,
+                    'self_consumption_kw': self_consumption,
+                    'electricity_price': price,
+                    'cost_import_brl': cost_import,
+                    'revenue_export_brl': revenue_export,
+                    'net_cost_brl': net_cost
+                })
+                
+                # Update battery degradation daily
+                if hour > 0 and hour % 24 == 0:
+                    battery.cycles_count += 0.5
+                    battery.update_degradation()
+            
+            # Save results
+            df = pd.DataFrame(results)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            df.to_csv(output_path, index=False)
+            
+            # Display summary
+            total_cost = df['net_cost_brl'].sum()
+            avg_soc = df['battery_soc'].mean()
+            final_degradation = battery.degradation_factor
+            total_solar = df['solar_generation_kw'].sum()
+            total_demand = df['demand_kw'].sum()
+            self_consumption_ratio = df['self_consumption_kw'].sum() / total_demand * 100
+            
+            print(f"\n✅ Simulation completed successfully!")
+            print(f"📊 Results Summary ({days} days):")
+            print(f"   💰 Total net cost: R$ {total_cost:.2f}")
+            print(f"   🔋 Average battery SOC: {avg_soc:.1%}")
+            print(f"   ⚡ Final battery health: {final_degradation:.1%}")
+            print(f"   ☀️ Solar self-consumption: {self_consumption_ratio:.1f}%")
+            print(f"   📁 Results saved to: {output_path}")
+            
+        except Exception as e:
+            print(f"❌ Simulation failed: {e}")
+            if '--debug' in sys.argv:
+                import traceback
+                traceback.print_exc()
+        
+        input("\nPress Enter to continue...")
+    
+    def menu_industrial_economic_analysis(self):
+        """Economic analysis combining industrial operation with battery investment"""
+        print("\n💰 Industrial Battery Economic Analysis")
+        print("Analysis includes: Energy costs, Battery investment, ROI calculation")
+        
+        profile = self.get_industrial_profile_input("Industrial profile", "medium_metallurgy")
+        battery_type = self.get_battery_type_input("Battery type", "li_ion_500kwh")
+        region = self.get_region_input("Climate region", "southeast_sp")
+        solar_system = self.get_solar_system_input("Solar system", "medium_1000kw")
+        days = int(self.get_user_input("Analysis period (days)", "30"))
+        
+        print(f"\n⏳ Running economic analysis...")
+        print(f"🏭 {profile} + 🔋 {battery_type} + ☀️ {solar_system}")
+        print(f"📍 Region: {region} | 📅 Period: {days} days")
+        
+        try:
+            # This would run a more comprehensive economic analysis
+            # For now, we'll run the integrated simulation and add economic metrics
+            # In a real implementation, this would include:
+            # - Battery CAPEX/OPEX costs
+            # - Financing options
+            # - Payback period calculation  
+            # - NPV and IRR analysis
+            
+            print("📈 Economic metrics calculation would be implemented here")
+            print("   - Battery investment cost analysis")
+            print("   - Energy cost savings calculation")
+            print("   - Payback period and ROI")
+            print("   - NPV over battery lifetime")
+            
+        except Exception as e:
+            print(f"❌ Analysis failed: {e}")
+        
+        input("\nPress Enter to continue...")
+    
+    def menu_compare_batteries_for_industry(self):
+        """Compare different battery types for a specific industrial application"""
+        print("\n⚖️ Battery Comparison for Industrial Application")
+        
+        profile = self.get_industrial_profile_input("Industrial profile", "medium_metallurgy")
+        region = self.get_region_input("Climate region", "southeast_sp")
+        
+        print(f"\n📊 Comparing batteries for {profile} in {region}")
+        print("Available battery types will be compared for:")
+        print("   - Energy cost savings")
+        print("   - Investment requirements") 
+        print("   - Technical performance")
+        print("   - Return on investment")
+        
+        # This would run multiple simulations with different battery types
+        battery_types = ["li_ion_500kwh", "na_ion_200kwh", "li_ion_100kwh"]
+        
+        print(f"🔋 Comparing: {', '.join(battery_types)}")
+        print("📈 Comparison results would be generated here")
+        
+        input("\nPress Enter to continue...")
+    
+    def menu_plot_industrial_battery_results(self):
+        """Plot results from integrated industrial battery simulations"""
+        print("\n📊 Plot Industrial Battery System Results")
+        
+        # Check for available results
+        results_dir = self.outputs_dir / "industrial_system"
+        if not results_dir.exists():
+            print("❌ No simulation results found!")
+            print("💡 Please run a simulation first:")
+            print("   Menu → 2. Industrial Battery System → 1. Complete industrial simulation")
+            input("\nPress Enter to continue...")
+            return
+        
+        csv_files = list(results_dir.glob("integrated_*.csv"))
+        if not csv_files:
+            print("❌ No integrated simulation results found!")
+            print("💡 Please run an integrated simulation first")
+            input("\nPress Enter to continue...")
+            return
+        
+        print(f"\n📁 Found {len(csv_files)} result files")
+        
+        # Show available files
+        for i, file in enumerate(csv_files, 1):
+            print(f"   {i}. {file.name}")
+        
+        try:
+            choice = int(input(f"\nSelect file to plot (1-{len(csv_files)}): "))
+            if 1 <= choice <= len(csv_files):
+                selected_file = csv_files[choice-1]
+                print(f"\n📊 Generating plots for: {selected_file.name}")
+                
+                # Generate comprehensive plots for integrated system
+                self.plot_integrated_industrial_battery_results(selected_file)
+                print("✅ Plots generated successfully!")
+            else:
+                print("❌ Invalid selection")
+                
+        except (ValueError, IndexError):
+            print("❌ Invalid input")
+        
+        input("\nPress Enter to continue...")
+    
+    def plot_integrated_industrial_battery_results(self, csv_file):
+        """Create comprehensive plots for integrated industrial battery system results"""
+        import pandas as pd
+        import matplotlib.pyplot as plt
+        import matplotlib.dates as mdates
+        from datetime import datetime
+        
+        # Read data
+        df = pd.read_csv(csv_file)
+        df['timestamp'] = pd.to_datetime(df['timestamp'])
+        
+        # Create figure with subplots
+        fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+        fig.suptitle(f'Industrial Battery System Analysis\n{csv_file.name}', fontsize=16, fontweight='bold')
+        
+        # Plot 1: Energy flows over time
+        ax1 = axes[0, 0]
+        ax1.plot(df['timestamp'], df['demand_kw'], label='Demand', color='red', alpha=0.8)
+        ax1.plot(df['timestamp'], df['solar_generation_kw'], label='Solar Generation', color='orange', alpha=0.8)
+        ax1.plot(df['timestamp'], df['grid_import_kw'], label='Grid Import', color='gray', alpha=0.6)
+        ax1.fill_between(df['timestamp'], 0, df['battery_power_kw'], 
+                         where=(df['battery_action'] == 'charge'), 
+                         label='Battery Charge', color='green', alpha=0.3)
+        ax1.fill_between(df['timestamp'], 0, -df['battery_power_kw'], 
+                         where=(df['battery_action'] == 'discharge'), 
+                         label='Battery Discharge', color='blue', alpha=0.3)
+        ax1.set_title('Energy Flows Over Time')
+        ax1.set_ylabel('Power (kW)')
+        ax1.legend()
+        ax1.grid(True, alpha=0.3)
+        
+        # Plot 2: Battery status
+        ax2 = axes[0, 1]
+        ax2_temp = ax2.twinx()
+        
+        line1 = ax2.plot(df['timestamp'], df['battery_soc'] * 100, label='Battery SOC (%)', color='blue', linewidth=2)
+        line2 = ax2_temp.plot(df['timestamp'], df['battery_temp'], label='Battery Temp (°C)', color='red', linewidth=2)
+        line3 = ax2_temp.plot(df['timestamp'], df['ambient_temp'], label='Ambient Temp (°C)', color='orange', alpha=0.7)
+        
+        ax2.set_title('Battery Status')
+        ax2.set_ylabel('State of Charge (%)', color='blue')
+        ax2_temp.set_ylabel('Temperature (°C)', color='red')
+        ax2.set_ylim(0, 100)
+        
+        # Combine legends
+        lines = line1 + line2 + line3
+        labels = [l.get_label() for l in lines]
+        ax2.legend(lines, labels, loc='center right')
+        ax2.grid(True, alpha=0.3)
+        
+        # Plot 3: Economic analysis
+        ax3 = axes[1, 0]
+        daily_costs = df.groupby(df['timestamp'].dt.date)['net_cost_brl'].sum()
+        ax3.bar(range(len(daily_costs)), daily_costs.values, color='red', alpha=0.7)
+        ax3.set_title('Daily Energy Costs')
+        ax3.set_ylabel('Cost (R$)')
+        ax3.set_xlabel('Day')
+        ax3.grid(True, alpha=0.3)
+        
+        # Add cost statistics
+        total_cost = df['net_cost_brl'].sum()
+        avg_daily_cost = daily_costs.mean()
+        ax3.text(0.02, 0.98, f'Total: R$ {total_cost:.2f}\\nAvg/day: R$ {avg_daily_cost:.2f}', 
+                transform=ax3.transAxes, verticalalignment='top', 
+                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+        
+        # Plot 4: System performance summary
+        ax4 = axes[1, 1]
+        
+        # Calculate key metrics
+        total_demand = df['demand_kw'].sum()
+        total_solar = df['solar_generation_kw'].sum()
+        total_self_consumption = df['self_consumption_kw'].sum()
+        self_consumption_ratio = (total_self_consumption / total_demand * 100) if total_demand > 0 else 0
+        
+        battery_charge_energy = df[df['battery_action'] == 'charge']['battery_power_kw'].sum()
+        battery_discharge_energy = df[df['battery_action'] == 'discharge']['battery_power_kw'].sum()
+        battery_efficiency = (battery_discharge_energy / battery_charge_energy * 100) if battery_charge_energy > 0 else 0
+        
+        avg_soc = df['battery_soc'].mean() * 100
+        final_degradation = df['battery_soc'].iloc[-1] if len(df) > 0 else 0
+        
+        # Performance metrics table
+        metrics = [
+            f'Self-consumption: {self_consumption_ratio:.1f}%',
+            f'Battery efficiency: {battery_efficiency:.1f}%',
+            f'Average SOC: {avg_soc:.1f}%',
+            f'Total cost: R$ {total_cost:.2f}',
+            f'Solar utilization: {(total_self_consumption/total_solar*100 if total_solar > 0 else 0):.1f}%'
+        ]
+        
+        ax4.axis('off')
+        ax4.text(0.1, 0.9, 'System Performance Summary', fontsize=14, fontweight='bold', transform=ax4.transAxes)
+        
+        for i, metric in enumerate(metrics):
+            ax4.text(0.1, 0.8 - i*0.12, metric, fontsize=12, transform=ax4.transAxes,
+                    bbox=dict(boxstyle='round,pad=0.3', facecolor='lightblue', alpha=0.7))
+        
+        # Format x-axes with dates
+        for ax in [ax1, ax2]:
+            ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
+            ax.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, len(df)//24//7)))  # Weekly ticks for longer periods
+            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+        
+        plt.tight_layout()
+        
+        # Save plot
+        plot_filename = f"integrated_analysis_{csv_file.stem}.png"
+        plot_path = csv_file.parent / plot_filename
+        plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+        plt.show()
+        
+        print(f"📊 Plot saved to: {plot_path}")
         
     def menu_train_agent(self):
         """Menu-driven RL agent training"""
