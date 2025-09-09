@@ -41,7 +41,7 @@ battery-thermal-rl/
 │   │   └── battery_thermal_env.py # Gymnasium environment
 │   ├── core/               # Core functionalities
 │   └── utils/              # Utilities
-├── data/                   # Generated climate data
+├── climate_data/           # Generated climate data
 ├── models/                 # Trained RL models
 ├── outputs/                # All analysis results
 │   ├── reports/            # HTML analysis reports
@@ -122,8 +122,8 @@ The interactive menu provides an intuitive interface with:
 ### 3. Command-Line Mode (Advanced Users)
 ```bash
 # Generate climate data for different regions
-python cli.py climate generate --region southeast_sp --days 30 --output data/sp_climate.csv
-python cli.py climate generate --region northeast_rn --days 30 --output data/rn_climate.csv
+python cli.py climate generate --region southeast_sp --days 30 --output climate_data/sp_climate.csv
+python cli.py climate generate --region northeast_rn --days 30 --output climate_data/rn_climate.csv
 
 # Test battery performance under different conditions
 python cli.py battery simulate --type li_ion_500kwh --temperature 25 --hours 4
