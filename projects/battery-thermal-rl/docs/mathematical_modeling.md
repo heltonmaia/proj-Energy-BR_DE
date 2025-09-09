@@ -2,7 +2,16 @@
 
 **Battery Thermal Management with Reinforcement Learning - Complete Mathematical Framework**
 
-This tutorial provides a comprehensive mathematical foundation for all models implemented in the Battery Thermal RL system, covering battery physics, thermal dynamics, industrial energy systems, climate modeling, and reinforcement learning formulations.
+This tutorial provides a comprehensive mathematical foundation for all models implemented in the Battery Thermal RL system - an advanced AI-powered battery optimization system for medium-sized industries with solar photovoltaic generation in Brazil.
+
+The system combines rigorous mathematical modeling (for battery physics and industrial systems) with intelligent decision-making (via reinforcement learning) to optimize battery usage considering thermal management, economic factors, and Brazilian climate conditions.
+
+**What This Document Contains:**
+- Complete mathematical formulations for battery thermal dynamics, industrial energy systems, solar PV modeling, Brazilian climate data generation, economic optimization, and reinforcement learning frameworks
+- Implementation details with discrete-time equations used in the actual code
+- Validation methods and numerical considerations for practical deployment
+
+**Prerequisites:** Basic knowledge of thermodynamics, electrochemistry, economics, and machine learning. For practical usage without mathematical details, see the main [README.md](../README.md) and [Quick Start Guide](../quick_start.md).
 
 ## Table of Contents
 

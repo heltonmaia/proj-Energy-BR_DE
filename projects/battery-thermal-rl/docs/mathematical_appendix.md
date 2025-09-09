@@ -4,6 +4,16 @@
 
 This appendix provides detailed mathematical derivations, proofs, and additional theoretical background for the Battery Thermal RL system.
 
+**Scope:** This document complements the [Mathematical Modeling Tutorial](mathematical_modeling.md) by providing:
+- Advanced theoretical foundations and derivations
+- Detailed proofs and mathematical justifications  
+- Extended formulations for research and development
+- Numerical methods and implementation considerations
+
+**Target Audience:** Academic researchers, PhD students, and advanced practitioners requiring deep theoretical understanding for extending the system or conducting scientific research.
+
+**Usage:** Refer to the main [Mathematical Modeling Tutorial](mathematical_modeling.md) first for the core mathematical framework. This appendix provides supporting theory for those who need deeper mathematical insight.
+
 ## A. Battery Electrochemical Fundamentals
 
 ### A.1 Electrochemical Kinetics

@@ -54,20 +54,22 @@ class BatteryThermalCLI:
         self.output_dir = Path("./outputs")
         self.output_dir.mkdir(exist_ok=True)
         
-        self.models_dir = Path("./models")
-        self.models_dir.mkdir(exist_ok=True)
+        # Create standardized output directories based on menu items
+        self.climate_data_dir = Path("./outputs/climate_data")
+        self.battery_simulation_dir = Path("./outputs/battery_simulation")
+        self.industrial_system_dir = Path("./outputs/industrial_system")
+        self.reinforcement_learning_dir = Path("./outputs/reinforcement_learning")
+        self.analysis_reports_dir = Path("./outputs/analysis_reports")
+        self.preset_workflows_dir = Path("./outputs/preset_workflows")
         
-        self.data_dir = Path("./climate_data")
-        self.data_dir.mkdir(exist_ok=True)
+        # Create all directories
+        for dir_path in [self.climate_data_dir, self.battery_simulation_dir, self.industrial_system_dir, 
+                        self.reinforcement_learning_dir, self.analysis_reports_dir, self.preset_workflows_dir]:
+            dir_path.mkdir(parents=True, exist_ok=True)
         
-        self.logs_dir = Path("./logs")
-        self.logs_dir.mkdir(exist_ok=True)
-        
-        # Create organized output subdirectories
-        (self.output_dir / "reports").mkdir(exist_ok=True)
-        (self.output_dir / "plots").mkdir(exist_ok=True)
-        (self.output_dir / "simulations").mkdir(exist_ok=True)
-        (self.output_dir / "evaluations").mkdir(exist_ok=True)
+        # Backward compatibility aliases
+        self.models_dir = self.reinforcement_learning_dir
+        self.data_dir = self.climate_data_dir
     
     def create_parser(self) -> argparse.ArgumentParser:
         """Create argument parser with all CLI commands"""
@@ -77,16 +79,16 @@ class BatteryThermalCLI:
             epilog="""
 Examples:
   # Generate climate data for São Paulo
-  python cli.py climate generate --region southeast_sp --days 30 --output climate_data/sp_climate.csv
+  python cli.py climate generate --region southeast_sp --days 30 --output outputs/outputs/climate_data/sp_climate.csv
   
   # Run battery simulation
   python cli.py battery simulate --type li_ion_500kwh --temperature 25 --hours 24
   
   # Train RL agent
-  python cli.py rl train --algorithm ppo --steps 100000 --output models/agent
+  python cli.py rl train --algorithm ppo --steps 100000 --output outputs/outputs/reinforcement_learning/agent
   
   # Evaluate trained agent
-  python cli.py rl evaluate --model models/agent.zip --episodes 10
+  python cli.py rl evaluate --model outputs/outputs/reinforcement_learning/agent.zip --episodes 10
   
   # Generate analysis report
   python cli.py analysis report --battery-type li_ion_500kwh --output report.html
@@ -1039,7 +1041,7 @@ Examples:
                 'climate_action': 'generate',
                 'region': 'southeast_sp',
                 'days': 30,
-                'output': 'climate_data/sp_climate_30d.csv',
+                'output': 'outputs/outputs/climate_data/sp_climate_30d.csv',
                 'start_date': '2024-01-01'
             })())
             print("Climate data generated!")
@@ -1047,11 +1049,11 @@ Examples:
         elif args.preset_action == 'climate-all':
             print("Generating climate data for all regions (7 days each)...")
             regions = [
-                ('southeast_sp', 'climate_data/southeast_sp_7d.csv'),
-                ('northeast_rn', 'climate_data/northeast_rn_7d.csv'),
-                ('south_rs', 'climate_data/south_rs_7d.csv'),
-                ('central_west_mt', 'climate_data/central_west_mt_7d.csv'),
-                ('north_am', 'climate_data/north_am_7d.csv')
+                ('southeast_sp', 'outputs/outputs/climate_data/southeast_sp_7d.csv'),
+                ('northeast_rn', 'outputs/outputs/climate_data/northeast_rn_7d.csv'),
+                ('south_rs', 'outputs/outputs/climate_data/south_rs_7d.csv'),
+                ('central_west_mt', 'outputs/outputs/climate_data/central_west_mt_7d.csv'),
+                ('north_am', 'outputs/outputs/climate_data/north_am_7d.csv')
             ]
             for region, output in regions:
                 self.run_climate_command(type('', (), {
@@ -1085,9 +1087,9 @@ Examples:
                 'temperature_min': 10,
                 'temperature_max': 50,
                 'temperature_step': 5,
-                'output': 'outputs/simulations/battery_comparison.csv'
+                'output': 'outputs/battery_simulation/battery_comparison.csv'
             })())
-            print("Battery comparison saved to outputs/simulations/battery_comparison.csv")
+            print("Battery comparison saved to outputs/battery_simulation/battery_comparison.csv")
             
         elif args.preset_action == 'industrial':
             print("Simulating industrial system (7 days)...")
@@ -1096,9 +1098,9 @@ Examples:
                 'profile': 'medium_metallurgy',
                 'days': 7,
                 'climate_region': 'southeast_sp',
-                'output': 'outputs/simulations/industrial_sim_7d.csv'
+                'output': 'outputs/battery_simulation/industrial_sim_7d.csv'
             })())
-            print("Industrial simulation saved to outputs/simulations/industrial_sim_7d.csv")
+            print("Industrial simulation saved to outputs/battery_simulation/industrial_sim_7d.csv")
             
         elif args.preset_action == 'industrial-economics':
             print("Running economic analysis (30 days)...")
@@ -1119,7 +1121,7 @@ Examples:
                 'rl_action': 'train',
                 'algorithm': 'ppo',
                 'steps': 10000,
-                'output': 'models/ppo_quick',
+                'output': 'outputs/outputs/reinforcement_learning/ppo_quick',
                 'eval_freq': 2000,
                 'tensorboard_log': None,
                 'battery_type': 'li_ion_500kwh',
@@ -1127,7 +1129,7 @@ Examples:
                 'climate_region': 'southeast_sp',
                 'simulation_days': 30
             })())
-            print("Quick training complete! Model saved to models/ppo_quick.zip")
+            print("Quick training complete! Model saved to outputs/reinforcement_learning/ppo_quick.zip")
             
         elif args.preset_action == 'train-full':
             if not RL_AVAILABLE:
@@ -1138,7 +1140,7 @@ Examples:
                 'rl_action': 'train',
                 'algorithm': 'ppo',
                 'steps': 100000,
-                'output': 'models/ppo_full',
+                'output': 'outputs/reinforcement_learning/ppo_full',
                 'eval_freq': 10000,
                 'tensorboard_log': 'logs/',
                 'battery_type': 'li_ion_500kwh',
@@ -1146,7 +1148,7 @@ Examples:
                 'climate_region': 'southeast_sp',
                 'simulation_days': 30
             })())
-            print("Full training complete! Model saved to models/ppo_full.zip")
+            print("Full training complete! Model saved to outputs/reinforcement_learning/ppo_full.zip")
             
         elif args.preset_action == 'train-sac':
             if not RL_AVAILABLE:
@@ -1157,7 +1159,7 @@ Examples:
                 'rl_action': 'train',
                 'algorithm': 'sac',
                 'steps': 50000,
-                'output': 'models/sac_agent',
+                'output': 'outputs/reinforcement_learning/sac_agent',
                 'eval_freq': 5000,
                 'tensorboard_log': None,
                 'battery_type': 'li_ion_500kwh',
@@ -1172,12 +1174,12 @@ Examples:
                 return
             print("Evaluating trained agent...")
             model_path = None
-            if Path("models/ppo_quick.zip").exists():
-                model_path = "models/ppo_quick.zip"
-            elif Path("models/ppo_full.zip").exists():
-                model_path = "models/ppo_full.zip"
-            elif Path("models/sac_agent.zip").exists():
-                model_path = "models/sac_agent.zip"
+            if Path("outputs/reinforcement_learning/ppo_quick.zip").exists():
+                model_path = "outputs/reinforcement_learning/ppo_quick.zip"
+            elif Path("outputs/reinforcement_learning/ppo_full.zip").exists():
+                model_path = "outputs/reinforcement_learning/ppo_full.zip"
+            elif Path("outputs/reinforcement_learning/sac_agent.zip").exists():
+                model_path = "outputs/reinforcement_learning/sac_agent.zip"
                 
             if model_path:
                 self.run_rl_command(type('', (), {
@@ -1198,7 +1200,7 @@ Examples:
                 'climate_action': 'generate',
                 'region': 'southeast_sp',
                 'days': 7,
-                'output': 'climate_data/demo_climate.csv',
+                'output': 'outputs/climate_data/demo_climate.csv',
                 'start_date': '2024-01-01'
             })())
             self.run_battery_command(type('', (), {
@@ -1230,9 +1232,9 @@ Examples:
                 'industrial_profile': 'medium_metallurgy',
                 'climate_region': 'southeast_sp',
                 'analysis_days': 30,
-                'output': 'outputs/reports/analysis_report.html'
+                'output': 'outputs/analysis_reports/analysis_report.html'
             })())
-            print("Report saved to outputs/reports/analysis_report.html")
+            print("Report saved to outputs/analysis_reports/analysis_report.html")
             
         elif args.preset_action == 'optimize':
             print("Running optimization analysis...")
@@ -1249,25 +1251,25 @@ Examples:
                 print("Error: matplotlib not available. Install with: pip install matplotlib seaborn")
                 return
             print("Generating plots...")
-            if Path("climate_climate_data/sp_climate_30d.csv").exists():
+            if Path("climate_outputs/climate_data/sp_climate_30d.csv").exists():
                 self.run_analysis_command(type('', (), {
                     'analysis_action': 'plot',
                     'type': 'climate',
-                    'data': 'climate_climate_data/sp_climate_30d.csv',
-                    'output': 'outputs/plots/climate_plot.png'
+                    'data': 'climate_outputs/climate_data/sp_climate_30d.csv',
+                    'output': 'outputs/climate_data/climate_plot.png'
                 })())
-                print("Climate plot saved to outputs/plots/climate_plot.png")
+                print("Climate plot saved to outputs/climate_data/climate_plot.png")
             else:
                 print("No climate data found! Run 'python cli.py preset climate' first.")
                 
-            if Path("outputs/simulations/industrial_sim_7d.csv").exists():
+            if Path("outputs/battery_simulation/industrial_sim_7d.csv").exists():
                 self.run_analysis_command(type('', (), {
                     'analysis_action': 'plot',
                     'type': 'industrial',
-                    'data': 'outputs/simulations/industrial_sim_7d.csv',
-                    'output': 'outputs/plots/industrial_plot.png'
+                    'data': 'outputs/battery_simulation/industrial_sim_7d.csv',
+                    'output': 'outputs/analysis_reports/industrial_plot.png'
                 })())
-                print("Industrial plot saved to outputs/plots/industrial_plot.png")
+                print("Industrial plot saved to outputs/analysis_reports/industrial_plot.png")
                 
         # Development workflows
         elif args.preset_action == 'dev-setup':
@@ -1305,9 +1307,9 @@ Examples:
             print("This will take several hours...")
             
             configs = [
-                ('li_ion_100kwh', 'ppo', 'models/bench_100kwh_ppo'),
-                ('li_ion_500kwh', 'ppo', 'models/bench_500kwh_ppo'),
-                ('li_ion_500kwh', 'sac', 'models/bench_500kwh_sac')
+                ('li_ion_100kwh', 'ppo', 'outputs/reinforcement_learning/bench_100kwh_ppo'),
+                ('li_ion_500kwh', 'ppo', 'outputs/reinforcement_learning/bench_500kwh_ppo'),
+                ('li_ion_500kwh', 'sac', 'outputs/reinforcement_learning/bench_500kwh_sac')
             ]
             
             for battery_type, algorithm, output in configs:
@@ -1329,7 +1331,7 @@ Examples:
         # Maintenance
         elif args.preset_action == 'clean':
             print("Cleaning output files...")
-            dirs_to_clean = ['outputs', 'climate_data', 'models', 'logs']
+            dirs_to_clean = ['outputs']
             for dir_name in dirs_to_clean:
                 dir_path = Path(dir_name)
                 if dir_path.exists():
@@ -1339,7 +1341,7 @@ Examples:
             
         elif args.preset_action == 'clean-models':
             print("Cleaning trained models...")
-            dirs_to_clean = ['models', 'logs']
+            dirs_to_clean = ['outputs/models']
             for dir_name in dirs_to_clean:
                 dir_path = Path(dir_name)
                 if dir_path.exists():
@@ -1420,10 +1422,11 @@ Examples:
             print("3. List available regions")
             print("4. Show climate statistics")
             print("5. 📊 Plot climate data visualizations")
+            print("6. 📈 Analyze existing climate data")
             print("0. ← Back to main menu")
             print("-"*50)
             
-            choice = input("Select option (0-5): ").strip()
+            choice = input("Select option (0-6): ").strip()
             
             if choice == '0':
                 break
@@ -1437,6 +1440,8 @@ Examples:
                 self.menu_climate_stats()
             elif choice == '5':
                 self.menu_plot_climate()
+            elif choice == '6':
+                self.menu_analyze_climate_data()
             else:
                 print("❌ Invalid choice. Please try again.")
                 
@@ -1450,7 +1455,7 @@ Examples:
             print("2. ⚖️  Compare battery types")  
             print("3. 📋 List available battery types")
             print("4. 🌡️  Temperature performance test")
-            print("5. 📊 Analyze existing climate data")
+            print("5. 📊 Plot battery simulation results")
             print("0. ← Back to main menu")
             print("-"*50)
             
@@ -1467,7 +1472,7 @@ Examples:
             elif choice == '4':
                 self.menu_battery_temperature_test()
             elif choice == '5':
-                self.menu_analyze_climate_data()
+                self.menu_plot_battery_results()
             else:
                 print("❌ Invalid choice. Please try again.")
                 
@@ -1480,10 +1485,11 @@ Examples:
             print("1. Simulate industrial system")
             print("2. Economic analysis")
             print("3. List industrial profiles")
+            print("4. 📊 Plot industrial simulation results")
             print("0. ← Back to main menu")
             print("-"*50)
             
-            choice = input("Select option (0-3): ").strip()
+            choice = input("Select option (0-4): ").strip()
             
             if choice == '0':
                 break
@@ -1493,6 +1499,8 @@ Examples:
                 self.menu_industrial_economics()
             elif choice == '3':
                 self.menu_list_industrial_profiles()
+            elif choice == '4':
+                self.menu_plot_industrial_results()
             else:
                 print("❌ Invalid choice. Please try again.")
                 
@@ -1731,6 +1739,43 @@ Examples:
             except EOFError:
                 return default
     
+    def get_solar_system_input(self, prompt="Solar system", default="medium_1000kw"):
+        """Get solar system input with numbered options display"""
+        solar_systems = list(TYPICAL_SOLAR_SYSTEMS.keys())
+        
+        print(f"\n☀️ Available solar systems:")
+        for i, system in enumerate(solar_systems, 1):
+            marker = " ⭐" if system == default else ""
+            print(f"  {i}. {system}{marker}")
+        
+        print(f"\nEnter solar system or number (default: {default}):")
+        
+        while True:
+            try:
+                user_input = input("> ").strip()
+                
+                if not user_input:
+                    return default
+                
+                # Check if input is a number
+                if user_input.isdigit():
+                    choice_num = int(user_input)
+                    if 1 <= choice_num <= len(solar_systems):
+                        return solar_systems[choice_num - 1]
+                    else:
+                        print(f"❌ Please enter a number between 1 and {len(solar_systems)}")
+                        continue
+                
+                # Check if input is a solar system name
+                if user_input in solar_systems:
+                    return user_input
+                else:
+                    print(f"❌ Invalid solar system. Available: {', '.join(solar_systems)}")
+            except KeyboardInterrupt:
+                return None
+            except EOFError:
+                return default
+    
     def get_industrial_profile_input(self, prompt="Industrial profile", default="medium_metallurgy"):
         """Get industrial profile input with numbered options display"""
         profiles = ['medium_metallurgy', 'medium_textile', 'medium_food', 'medium_chemical']
@@ -1770,7 +1815,7 @@ Examples:
     def get_available_climate_files(self):
         """Get list of available climate data files"""
         climate_files = []
-        data_dir = Path("climate_data")
+        data_dir = Path("outputs/climate_data")
         if data_dir.exists():
             for csv_file in data_dir.glob("*.csv"):
                 # Parse filename to get info
@@ -1843,6 +1888,518 @@ Examples:
         except Exception as e:
             print(f"❌ Error loading climate data: {e}")
             return None
+    
+    def get_available_battery_files(self):
+        """Get list of available battery simulation files"""
+        battery_files = []
+        data_dir = Path("outputs/battery_simulation")
+        if data_dir.exists():
+            for csv_file in data_dir.glob("*.csv"):
+                battery_files.append({
+                    'path': str(csv_file),
+                    'name': csv_file.name,
+                })
+        return battery_files
+    
+    def load_battery_data(self, file_path):
+        """Load battery simulation data from CSV file"""
+        try:
+            import pandas as pd
+            df = pd.read_csv(file_path)
+            return df
+        except Exception as e:
+            print(f"❌ Error loading battery data: {e}")
+            return None
+    
+    def plot_battery_file(self, file_path, filename):
+        """Plot individual battery simulation file"""
+        try:
+            import matplotlib.pyplot as plt
+            import pandas as pd
+            
+            # Load data
+            df = self.load_battery_data(file_path)
+            if df is None:
+                return
+            
+            # Create output directory
+            output_dir = Path("outputs/battery_simulation")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Convert hours to days for better readability
+            df['day'] = df['hour'] / 24.0
+            
+            # Create figure with subplots
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
+            fig.suptitle(f'Battery Simulation Analysis: {filename}', fontsize=16, y=0.98)
+            
+            # Plot 1: Temperature vs SOC over time
+            ax1.plot(df['day'], df['ambient_temp'], 'r-', label='Ambient Temp', linewidth=1.5, alpha=0.8)
+            ax1.plot(df['day'], df['battery_temp'], 'orange', label='Battery Temp', linewidth=2)
+            ax1_twin = ax1.twinx()
+            ax1_twin.plot(df['day'], df['soc'], 'b-', label='SOC', linewidth=2)
+            ax1.set_xlabel('Days')
+            ax1.set_ylabel('Temperature (°C)', color='r')
+            ax1_twin.set_ylabel('State of Charge', color='b')
+            ax1.tick_params(axis='y', labelcolor='r')
+            ax1_twin.tick_params(axis='y', labelcolor='b')
+            ax1.grid(True, alpha=0.3)
+            ax1.legend(loc='upper left')
+            ax1_twin.legend(loc='upper right')
+            ax1.set_title('Temperature & SOC Over Time')
+            
+            # Plot 2: Full period efficiency evolution
+            ax2.plot(df['day'], df['efficiency'], 'g-', linewidth=2, alpha=0.8)
+            ax2.set_xlabel('Days')
+            ax2.set_ylabel('Efficiency')
+            ax2.set_title('Efficiency Evolution Over Full Period')
+            ax2.grid(True, alpha=0.3)
+            ax2.set_ylim(df['efficiency'].min() - 0.01, df['efficiency'].max() + 0.01)
+            
+            # Add average line
+            avg_eff = df['efficiency'].mean()
+            ax2.axhline(y=avg_eff, color='red', linestyle='--', alpha=0.7, 
+                       label=f'Average: {avg_eff:.3f}')
+            ax2.legend()
+            
+            # Plot 3: Energy flow over time with cumulative view
+            # Show both instantaneous and cumulative energy
+            ax3_twin = ax3.twinx()
+            
+            # Plot instantaneous energy transfer
+            charge_mask = df['energy'] > 0
+            discharge_mask = df['energy'] < 0
+            
+            if charge_mask.any():
+                ax3.scatter(df[charge_mask]['day'], df[charge_mask]['energy'], 
+                          color='green', alpha=0.6, s=20, label='Charge Events')
+            if discharge_mask.any():
+                ax3.scatter(df[discharge_mask]['day'], df[discharge_mask]['energy'], 
+                          color='red', alpha=0.6, s=20, label='Discharge Events')
+            
+            # Plot cumulative energy
+            df['cumulative_energy'] = df['energy'].cumsum()
+            ax3_twin.plot(df['day'], df['cumulative_energy'], 'purple', 
+                         linewidth=2, alpha=0.8, label='Cumulative Energy')
+            
+            ax3.set_xlabel('Days')
+            ax3.set_ylabel('Energy Transfer (kWh)', color='black')
+            ax3_twin.set_ylabel('Cumulative Energy (kWh)', color='purple')
+            ax3_twin.tick_params(axis='y', labelcolor='purple')
+            ax3.set_title('Energy Transfer Over Full Period')
+            ax3.grid(True, alpha=0.3)
+            ax3.legend(loc='upper left')
+            ax3_twin.legend(loc='upper right')
+            
+            # Plot 4: Statistics summary
+            ax4.axis('off')
+            # Calculate additional statistics
+            days_simulated = len(df) / 24
+            temp_rise_avg = (df['battery_temp'] - df['ambient_temp']).mean()
+            soc_variation = df['soc'].max() - df['soc'].min()
+            
+            # Create mini daily profile plot in statistics area
+            ax4.clear()
+            ax4.axis('on')
+            
+            # Calculate hourly averages for daily profile
+            df_hourly = df.groupby(df['hour'] % 24).agg({
+                'ambient_temp': 'mean',
+                'battery_temp': 'mean',
+                'efficiency': 'mean'
+            }).reset_index()
+            
+            # Plot mini daily temperature profile
+            ax4.plot(df_hourly['hour'], df_hourly['ambient_temp'], 'r-', 
+                    label='Avg Ambient', linewidth=1.5, alpha=0.8)
+            ax4.plot(df_hourly['hour'], df_hourly['battery_temp'], 'orange', 
+                    label='Avg Battery', linewidth=1.5, alpha=0.8)
+            
+            ax4.set_xlabel('Hour of Day', fontsize=9)
+            ax4.set_ylabel('Temperature (°C)', fontsize=9)
+            ax4.set_title(f'Daily Temperature Profile (avg over {days_simulated:.0f} days)', fontsize=10)
+            ax4.grid(True, alpha=0.3)
+            ax4.legend(fontsize=8)
+            ax4.tick_params(labelsize=8)
+            ax4.set_xticks(range(0, 24, 4))
+            
+            # Add text statistics below the plot
+            stats_text = f"""
+PERIOD: {len(df)} hours ({days_simulated:.1f} days)
+TEMP: Ambient {df['ambient_temp'].mean():.1f}°C, Battery {df['battery_temp'].mean():.1f}°C (rise: {temp_rise_avg:.2f}°C)
+SOC: {df['soc'].min():.3f}-{df['soc'].max():.3f} (var: {soc_variation*100:.1f}%, final: {df['soc'].iloc[-1]:.3f})
+EFFICIENCY: {df['efficiency'].mean():.3f} avg ({df['efficiency'].min():.3f}-{df['efficiency'].max():.3f})
+ENERGY: {df['energy'].sum():.0f}kWh net ({df['energy'].sum()/days_simulated:.1f}kWh/day avg)
+            """
+            
+            ax4.text(0.02, -0.25, stats_text.strip(), fontsize=8, fontfamily='monospace',
+                    verticalalignment='top', transform=ax4.transAxes,
+                    bbox=dict(boxstyle='round,pad=0.3', facecolor='lightgray', alpha=0.8))
+            
+            # Adjust layout to prevent overlap
+            plt.tight_layout(rect=[0, 0.1, 1, 0.96])
+            plt.subplots_adjust(hspace=0.3, wspace=0.3)
+            
+            # Save plot
+            plot_filename = f"battery_plot_{Path(filename).stem}.png"
+            plot_path = output_dir / plot_filename
+            plt.savefig(plot_path, dpi=300, bbox_inches='tight', facecolor='white')
+            plt.close()
+            
+            print(f"✅ Plot saved: {plot_path}")
+            
+        except ImportError:
+            print("❌ Matplotlib not installed. Install with: pip install matplotlib")
+        except Exception as e:
+            print(f"❌ Error creating plot: {e}")
+    
+    def plot_all_battery_files(self, battery_files):
+        """Create comparison plot for all battery simulation files"""
+        try:
+            import matplotlib.pyplot as plt
+            import pandas as pd
+            
+            # Create output directory
+            output_dir = Path("outputs/battery_simulation")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Load all data
+            all_data = {}
+            for file_info in battery_files:
+                df = self.load_battery_data(file_info['path'])
+                if df is not None:
+                    all_data[file_info['name']] = df
+            
+            if not all_data:
+                print("❌ No valid data files found")
+                return
+                
+            # Create comparison plots
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(18, 12))
+            fig.suptitle('Battery Simulations Comparison', fontsize=16, y=0.98)
+            
+            colors = ['#FF4500', '#1E90FF', '#32CD32', '#8A2BE2', '#DC143C', '#FF1493', '#00CED1']
+            
+            # Process data for better comparison
+            for i, (filename, df) in enumerate(all_data.items()):
+                color = colors[i % len(colors)]
+                label = Path(filename).stem.replace('battery_sim_', '').replace('_', ' ').title()
+                
+                # Convert to days for better readability
+                df['day'] = df['hour'] / 24.0
+                
+                # Plot 1: SOC comparison over days
+                ax1.plot(df['day'], df['soc'], color=color, label=label, linewidth=2, alpha=0.8)
+                
+                # Plot 2: Battery temperature comparison
+                ax2.plot(df['day'], df['battery_temp'], color=color, label=label, linewidth=2, alpha=0.8)
+                
+                # Plot 3: Full period efficiency evolution
+                ax3.plot(df['day'], df['efficiency'], color=color, 
+                        label=label, linewidth=2, alpha=0.7)
+            
+            # Configure subplots
+            ax1.set_xlabel('Days')
+            ax1.set_ylabel('State of Charge')
+            ax1.set_title('SOC Evolution Comparison')
+            ax1.grid(True, alpha=0.3)
+            ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            
+            ax2.set_xlabel('Days')
+            ax2.set_ylabel('Battery Temperature (°C)')
+            ax2.set_title('Battery Temperature Comparison')
+            ax2.grid(True, alpha=0.3)
+            ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            
+            ax3.set_xlabel('Days')
+            ax3.set_ylabel('Efficiency')
+            ax3.set_title('Efficiency Evolution Comparison')
+            ax3.grid(True, alpha=0.3)
+            ax3.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            
+            # Statistics table
+            ax4.axis('off')
+            stats_lines = ["COMPARISON SUMMARY\n"]
+            
+            for filename, df in all_data.items():
+                name = Path(filename).stem[:25]  # Truncate long names
+                stats_lines.extend([
+                    f"{name}:",
+                    f"  SOC: {df['soc'].iloc[-1]:.3f} (Δ={df['soc'].iloc[-1] - df['soc'].iloc[0]:+.3f})",
+                    f"  Eff: {df['efficiency'].mean():.3f}",
+                    f"  Temp: {df['battery_temp'].mean():.1f}°C",
+                    ""
+                ])
+            
+            ax4.text(0.1, 0.95, '\n'.join(stats_lines), fontsize=10, fontfamily='monospace',
+                    verticalalignment='top', transform=ax4.transAxes)
+            
+            # Adjust layout to accommodate legends
+            plt.tight_layout(rect=[0, 0.03, 0.85, 0.96])
+            
+            # Save plot
+            plot_path = output_dir / "battery_comparison_plot.png"
+            plt.savefig(plot_path, dpi=300, bbox_inches='tight', facecolor='white')
+            plt.close()
+            
+            print(f"✅ Comparison plot saved: {plot_path}")
+            
+        except ImportError:
+            print("❌ Matplotlib not installed. Install with: pip install matplotlib")
+        except Exception as e:
+            print(f"❌ Error creating comparison plot: {e}")
+    
+    def get_available_industrial_files(self):
+        """Get list of available industrial simulation files"""
+        industrial_files = []
+        data_dir = Path("outputs/industrial_system")
+        if data_dir.exists():
+            for csv_file in data_dir.glob("*.csv"):
+                industrial_files.append({
+                    'path': str(csv_file),
+                    'name': csv_file.name,
+                })
+        return industrial_files
+    
+    def load_industrial_data(self, file_path):
+        """Load industrial simulation data from CSV file"""
+        try:
+            import pandas as pd
+            df = pd.read_csv(file_path)
+            return df
+        except Exception as e:
+            print(f"❌ Error loading industrial data: {e}")
+            return None
+    
+    def plot_industrial_file(self, file_path, filename):
+        """Plot individual industrial simulation file"""
+        try:
+            import matplotlib.pyplot as plt
+            import pandas as pd
+            
+            # Load data
+            df = self.load_industrial_data(file_path)
+            if df is None:
+                return
+            
+            # Convert timestamp to datetime and add days column
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            df['day'] = (df['timestamp'] - df['timestamp'].iloc[0]).dt.days + (df['timestamp'] - df['timestamp'].iloc[0]).dt.seconds / 86400
+            
+            # Create output directory
+            output_dir = Path("outputs/industrial_system")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Create figure with subplots
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(16, 12))
+            fig.suptitle(f'Industrial System Analysis: {filename}', fontsize=16, y=0.98)
+            
+            # Plot 1: Energy flows over time
+            ax1.plot(df['day'], df['demand_kw'], 'red', label='Demand', linewidth=2, alpha=0.8)
+            ax1.plot(df['day'], df['solar_generation_kw'], 'orange', label='Solar Generation', linewidth=2, alpha=0.8)
+            ax1.plot(df['day'], df['grid_import_kw'], 'blue', label='Grid Import', linewidth=2, alpha=0.7)
+            ax1.set_xlabel('Days')
+            ax1.set_ylabel('Power (kW)')
+            ax1.set_title('Energy Flows Over Time')
+            ax1.grid(True, alpha=0.3)
+            ax1.legend()
+            
+            # Plot 2: Daily energy patterns
+            # Calculate hourly averages for daily profile
+            df['hour'] = df['timestamp'].dt.hour
+            df_hourly = df.groupby('hour').agg({
+                'demand_kw': 'mean',
+                'solar_generation_kw': 'mean',
+                'grid_import_kw': 'mean'
+            }).reset_index()
+            
+            ax2.plot(df_hourly['hour'], df_hourly['demand_kw'], 'red', 
+                    label='Avg Demand', linewidth=2, marker='o', markersize=4)
+            ax2.plot(df_hourly['hour'], df_hourly['solar_generation_kw'], 'orange', 
+                    label='Avg Solar', linewidth=2, marker='s', markersize=4)
+            ax2.plot(df_hourly['hour'], df_hourly['grid_import_kw'], 'blue', 
+                    label='Avg Grid Import', linewidth=2, marker='^', markersize=4)
+            ax2.set_xlabel('Hour of Day')
+            ax2.set_ylabel('Power (kW)')
+            ax2.set_title('Daily Energy Profile (24h Average)')
+            ax2.grid(True, alpha=0.3)
+            ax2.legend()
+            ax2.set_xticks(range(0, 24, 3))
+            
+            # Plot 3: Cost and price analysis
+            ax3_twin = ax3.twinx()
+            ax3.plot(df['day'], df['cost_brl'], 'green', linewidth=2, alpha=0.8)
+            ax3_twin.plot(df['day'], df['electricity_price_brl_kwh'], 'purple', linewidth=2, alpha=0.8)
+            ax3.set_xlabel('Days')
+            ax3.set_ylabel('Hourly Cost (R$)', color='green')
+            ax3_twin.set_ylabel('Price (R$/kWh)', color='purple')
+            ax3.tick_params(axis='y', labelcolor='green')
+            ax3_twin.tick_params(axis='y', labelcolor='purple')
+            ax3.set_title('Cost and Electricity Price Over Time')
+            ax3.grid(True, alpha=0.3)
+            
+            # Plot 4: Statistics summary with mini daily cost profile
+            ax4.clear()
+            ax4.axis('on')
+            
+            # Calculate hourly average cost
+            df_cost_hourly = df.groupby('hour').agg({
+                'cost_brl': 'mean',
+                'electricity_price_brl_kwh': 'mean'
+            }).reset_index()
+            
+            # Plot mini daily cost profile
+            ax4.bar(df_cost_hourly['hour'], df_cost_hourly['cost_brl'], 
+                   color='green', alpha=0.7, label='Avg Hourly Cost')
+            ax4_twin = ax4.twinx()
+            ax4_twin.plot(df_cost_hourly['hour'], df_cost_hourly['electricity_price_brl_kwh'], 
+                         'purple', linewidth=2, marker='o', markersize=3, alpha=0.8, label='Avg Price')
+            
+            ax4.set_xlabel('Hour of Day', fontsize=9)
+            ax4.set_ylabel('Cost (R$)', color='green', fontsize=9)
+            ax4_twin.set_ylabel('Price (R$/kWh)', color='purple', fontsize=9)
+            ax4.set_title(f'Daily Cost Profile (avg over {len(df)/24:.0f} days)', fontsize=10)
+            ax4.grid(True, alpha=0.3)
+            ax4.tick_params(labelsize=8, axis='y', labelcolor='green')
+            ax4_twin.tick_params(labelsize=8, axis='y', labelcolor='purple')
+            ax4.set_xticks(range(0, 24, 4))
+            
+            # Add statistics text
+            days_simulated = len(df) / 24
+            total_demand = df['demand_kw'].sum()
+            total_solar = df['solar_generation_kw'].sum()
+            total_cost = df['cost_brl'].sum()
+            self_consumption_ratio = df['self_consumption_kw'].sum() / total_demand if total_demand > 0 else 0
+            
+            stats_text = f"""
+PERIOD: {len(df)} hours ({days_simulated:.0f} days)
+DEMAND: {total_demand:.0f}kWh total ({total_demand/days_simulated:.0f}kWh/day avg)
+SOLAR: {total_solar:.0f}kWh total ({total_solar/days_simulated:.0f}kWh/day avg)
+SELF-CONSUMPTION: {self_consumption_ratio:.1%} of demand
+COST: R$ {total_cost:.0f} total (R$ {total_cost/days_simulated:.0f}/day avg)
+PRICE: R$ {df['electricity_price_brl_kwh'].mean():.3f}/kWh avg
+            """
+            
+            ax4.text(0.02, -0.35, stats_text.strip(), fontsize=8, fontfamily='monospace',
+                    verticalalignment='top', transform=ax4.transAxes,
+                    bbox=dict(boxstyle='round,pad=0.3', facecolor='lightblue', alpha=0.8))
+            
+            # Adjust layout
+            plt.tight_layout(rect=[0, 0.1, 1, 0.96])
+            plt.subplots_adjust(hspace=0.3, wspace=0.3)
+            
+            # Save plot
+            plot_filename = f"industrial_plot_{Path(filename).stem}.png"
+            plot_path = output_dir / plot_filename
+            plt.savefig(plot_path, dpi=300, bbox_inches='tight', facecolor='white')
+            plt.close()
+            
+            print(f"✅ Plot saved: {plot_path}")
+            
+        except ImportError:
+            print("❌ Matplotlib not installed. Install with: pip install matplotlib")
+        except Exception as e:
+            print(f"❌ Error creating plot: {e}")
+    
+    def plot_all_industrial_files(self, industrial_files):
+        """Create comparison plot for all industrial simulation files"""
+        try:
+            import matplotlib.pyplot as plt
+            import pandas as pd
+            
+            # Create output directory
+            output_dir = Path("outputs/industrial_system")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            # Load all data
+            all_data = {}
+            for file_info in industrial_files:
+                df = self.load_industrial_data(file_info['path'])
+                if df is not None:
+                    df['timestamp'] = pd.to_datetime(df['timestamp'])
+                    df['day'] = (df['timestamp'] - df['timestamp'].iloc[0]).dt.days + (df['timestamp'] - df['timestamp'].iloc[0]).dt.seconds / 86400
+                    all_data[file_info['name']] = df
+            
+            if not all_data:
+                print("❌ No valid data files found")
+                return
+                
+            # Create comparison plots
+            fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(18, 12))
+            fig.suptitle('Industrial Systems Comparison', fontsize=16, y=0.98)
+            
+            colors = ['#FF4500', '#1E90FF', '#32CD32', '#8A2BE2', '#DC143C', '#FF1493', '#00CED1']
+            
+            # Process data for better comparison
+            for i, (filename, df) in enumerate(all_data.items()):
+                color = colors[i % len(colors)]
+                label = Path(filename).stem.replace('industrial_', '').replace('_', ' ').title()
+                
+                # Plot 1: Demand comparison
+                ax1.plot(df['day'], df['demand_kw'], color=color, label=label, linewidth=2, alpha=0.8)
+                
+                # Plot 2: Solar generation comparison
+                ax2.plot(df['day'], df['solar_generation_kw'], color=color, label=label, linewidth=2, alpha=0.8)
+                
+                # Plot 3: Daily cost evolution
+                ax3.plot(df['day'], df['cost_brl'], color=color, label=label, linewidth=2, alpha=0.8)
+            
+            # Configure subplots
+            ax1.set_xlabel('Days')
+            ax1.set_ylabel('Demand (kW)')
+            ax1.set_title('Industrial Demand Comparison')
+            ax1.grid(True, alpha=0.3)
+            ax1.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            
+            ax2.set_xlabel('Days')
+            ax2.set_ylabel('Solar Generation (kW)')
+            ax2.set_title('Solar Generation Comparison')
+            ax2.grid(True, alpha=0.3)
+            ax2.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            
+            ax3.set_xlabel('Days')
+            ax3.set_ylabel('Hourly Cost (R$)')
+            ax3.set_title('Cost Evolution Comparison')
+            ax3.grid(True, alpha=0.3)
+            ax3.legend(bbox_to_anchor=(1.05, 1), loc='upper left')
+            
+            # Statistics table
+            ax4.axis('off')
+            stats_lines = ["COMPARISON SUMMARY\n"]
+            
+            for filename, df in all_data.items():
+                name = Path(filename).stem[:25]  # Truncate long names
+                days_sim = len(df) / 24
+                total_cost = df['cost_brl'].sum()
+                total_demand = df['demand_kw'].sum()
+                total_solar = df['solar_generation_kw'].sum()
+                self_consumption_ratio = df['self_consumption_kw'].sum() / total_demand if total_demand > 0 else 0
+                
+                stats_lines.extend([
+                    f"{name}:",
+                    f"  Cost: R$ {total_cost:.0f} ({total_cost/days_sim:.0f}/day)",
+                    f"  Demand: {total_demand:.0f}kWh ({total_demand/days_sim:.0f}/day)", 
+                    f"  Solar: {total_solar:.0f}kWh ({self_consumption_ratio:.1%} self-cons)",
+                    ""
+                ])
+            
+            ax4.text(0.1, 0.95, '\n'.join(stats_lines), fontsize=10, fontfamily='monospace',
+                    verticalalignment='top', transform=ax4.transAxes)
+            
+            # Adjust layout to accommodate legends
+            plt.tight_layout(rect=[0, 0.03, 0.85, 0.96])
+            
+            # Save plot
+            plot_path = output_dir / "industrial_comparison_plot.png"
+            plt.savefig(plot_path, dpi=300, bbox_inches='tight', facecolor='white')
+            plt.close()
+            
+            print(f"✅ Comparison plot saved: {plot_path}")
+            
+        except ImportError:
+            print("❌ Matplotlib not installed. Install with: pip install matplotlib")
+        except Exception as e:
+            print(f"❌ Error creating comparison plot: {e}")
     
     def simulate_battery_with_climate_data(self, battery_type, climate_file_info, action, power=None, initial_soc=0.5):
         """Simulate battery using real climate data"""
@@ -1925,7 +2482,7 @@ Examples:
         
         region = self.get_region_input("Region", "southeast_sp")
         days = int(self.get_user_input("Number of days", "30"))
-        output = self.get_user_input("Output file", f"climate_data/{region}_{days}d.csv")
+        output = self.get_user_input("Output file", f"outputs/climate_data/{region}_{days}d.csv")
         
         print(f"\n⏳ Generating {days} days of climate data for {region}...")
         self.run_climate_command(type('', (), {
@@ -1946,11 +2503,11 @@ Examples:
         
         # Generate for all regions with user-specified days
         regions = [
-            ('southeast_sp', f'climate_data/southeast_sp_{days}d.csv'),
-            ('northeast_rn', f'climate_data/northeast_rn_{days}d.csv'),
-            ('south_rs', f'climate_data/south_rs_{days}d.csv'),
-            ('central_west_mt', f'climate_data/central_west_mt_{days}d.csv'),
-            ('north_am', f'climate_data/north_am_{days}d.csv')
+            ('southeast_sp', f'outputs/climate_data/southeast_sp_{days}d.csv'),
+            ('northeast_rn', f'outputs/climate_data/northeast_rn_{days}d.csv'),
+            ('south_rs', f'outputs/climate_data/south_rs_{days}d.csv'),
+            ('central_west_mt', f'outputs/climate_data/central_west_mt_{days}d.csv'),
+            ('north_am', f'outputs/climate_data/north_am_{days}d.csv')
         ]
         
         for region, output in regions:
@@ -1997,7 +2554,7 @@ Examples:
         print("Generate visualizations for climate data files")
         
         # Get climate data directory
-        climate_dir = Path("climate_data")
+        climate_dir = Path("outputs/climate_data")
         if not climate_dir.exists():
             print("❌ Climate data directory not found. Generate climate data first.")
             input("\nPress Enter to continue...")
@@ -2028,11 +2585,11 @@ Examples:
                 # Generate comparative plot with all regions
                 print("\n🌍 Generating comparative plot with all regions...")
                 if self.plot_all_regions_comparison(climate_files):
-                    print("✅ Generated comparative plot: outputs/plots/climate_all_regions_comparison.png")
+                    print("✅ Generated comparative plot: outputs/climate_data/climate_all_regions_comparison.png")
                 else:
                     print("❌ Failed to generate comparative plot")
                     
-                print(f"\n🎯 Summary: Generated {len(climate_files)} individual plots + 1 comparative plot in outputs/plots/")
+                print(f"\n🎯 Summary: Generated {len(climate_files)} individual plots + 1 comparative plot in outputs/climate_data/")
                 
             else:
                 # Plot single region
@@ -2041,7 +2598,7 @@ Examples:
                     selected_file = climate_files[file_idx]
                     print(f"\n🎨 Generating plot for {selected_file.name}...")
                     self.plot_single_climate_file(selected_file)
-                    print(f"✅ Plot saved to outputs/plots/climate_{selected_file.stem}.png")
+                    print(f"✅ Plot saved to outputs/climate_data/climate_{selected_file.stem}.png")
                 else:
                     print("❌ Invalid selection.")
                     
@@ -2057,7 +2614,7 @@ Examples:
             df = pd.read_csv(climate_file)
             
             # Create output directory
-            output_dir = Path("outputs/plots")
+            output_dir = Path("outputs/climate_data")
             output_dir.mkdir(parents=True, exist_ok=True)
             
             # Create comprehensive plot
@@ -2183,7 +2740,7 @@ Humidity:
                 return False
             
             # Create output directory
-            output_dir = Path("outputs/plots")
+            output_dir = Path("outputs/climate_data")
             output_dir.mkdir(parents=True, exist_ok=True)
             
             # Create comprehensive comparative plot with daily averages
@@ -2394,68 +2951,44 @@ Humidity:
             return False
         
     def menu_simulate_battery(self):
-        """Menu-driven battery simulation"""
-        print("\n🔋 Battery Simulation")
+        """Menu-driven battery simulation using climate data exclusively"""
+        print("\n🔋 Battery Simulation with Climate Data")
+        print("This simulation uses real climate data from Brazilian regions")
+        
+        # Check if climate data is available
+        climate_file = self.get_climate_file_input()
+        if climate_file is None:
+            print("❌ No climate data available!")
+            print("💡 Please generate climate data first:")
+            print("   Main Menu → 1. Climate Data → Generate climate data")
+            input("\nPress Enter to continue...")
+            return
         
         battery_type = self.get_battery_type_input("Battery type", "li_ion_500kwh")
+        action = self.get_user_input("Action", "charge", ["charge", "discharge", "hold"])
+        initial_soc = float(self.get_user_input("Initial state of charge (0-1)", "0.5"))
         
-        # Choose simulation mode
-        print("\n🌡️ Temperature data source:")
-        print("1. 📊 Use climate data (realistic, hourly temperatures)")
-        print("2. 🔧 Fixed temperature (simple, constant temperature)")
+        print(f"\n⏳ Simulating {battery_type} with real climate data...")
+        print(f"📍 Region: {climate_file['region']}")
+        print(f"📊 Data: {climate_file['days']} days ({climate_file['days'] * 24} hours)")
         
-        mode_choice = input("Select mode (1-2, default: 1): ").strip() or "1"
+        results = self.simulate_battery_with_climate_data(
+            battery_type, climate_file, action, None, initial_soc
+        )
         
-        if mode_choice == "1":
-            # Climate-based simulation
-            climate_file = self.get_climate_file_input()
-            if climate_file is None:
-                print("❌ No climate data available. Using fixed temperature mode.")
-                mode_choice = "2"
-            elif climate_file == 'fixed':
-                mode_choice = "2"
+        if results:
+            # Offer to save results
+            save_choice = input("\n💾 Save results to CSV? (y/N): ").strip().lower()
+            if save_choice == 'y':
+                filename = f"battery_sim_{battery_type}_{climate_file['region']}_{action}.csv"
+                output_path = self.battery_simulation_dir / filename
+                
+                # Convert results to DataFrame and save
+                import pandas as pd
+                df = pd.DataFrame(results)
+                df.to_csv(output_path, index=False)
+                print(f"✅ Results saved to: {output_path}")
         
-        if mode_choice == "2":
-            # Fixed temperature simulation
-            temperature = float(self.get_user_input("Temperature (°C)", "25"))
-            hours = int(self.get_user_input("Duration (hours)", "24"))
-            action = self.get_user_input("Action", "charge", ["charge", "discharge", "hold"])
-            initial_soc = float(self.get_user_input("Initial state of charge (0-1)", "0.5"))
-            
-            print(f"\n⏳ Simulating {battery_type} at fixed {temperature}°C...")
-            self.run_battery_command(type('', (), {
-                'battery_action': 'simulate',
-                'type': battery_type,
-                'temperature': temperature,
-                'action': action,
-                'power': None,
-                'hours': hours,
-                'initial_soc': initial_soc
-            })())
-        else:
-            # Climate-based simulation
-            action = self.get_user_input("Action", "charge", ["charge", "discharge", "hold"])
-            initial_soc = float(self.get_user_input("Initial state of charge (0-1)", "0.5"))
-            
-            print(f"\n⏳ Simulating {battery_type} with real climate data...")
-            results = self.simulate_battery_with_climate_data(
-                battery_type, climate_file, action, None, initial_soc
-            )
-            
-            if results:
-                # Offer to save results
-                save_choice = input("\n💾 Save results to CSV? (y/N): ").strip().lower()
-                if save_choice == 'y':
-                    output_file = f"outputs/simulations/battery_{battery_type}_{climate_file['region']}_{action}.csv"
-                    try:
-                        import pandas as pd
-                        results_df = pd.DataFrame(results)
-                        results_df.to_csv(output_file, index=False)
-                        print(f"✅ Results saved to {output_file}")
-                    except Exception as e:
-                        print(f"❌ Error saving results: {e}")
-        
-        self.safe_continue()
         
     def menu_compare_batteries(self):
         """Menu-driven battery comparison"""
@@ -2463,7 +2996,7 @@ Humidity:
         
         temp_min = int(self.get_user_input("Minimum temperature (°C)", "10"))
         temp_max = int(self.get_user_input("Maximum temperature (°C)", "50"))
-        output = self.get_user_input("Output file", "outputs/simulations/battery_comparison.csv")
+        output = self.get_user_input("Output file", "outputs/battery_simulation/battery_comparison.csv")
         
         print(f"\n⏳ Comparing batteries from {temp_min}°C to {temp_max}°C...")
         self.run_battery_command(type('', (), {
@@ -2490,6 +3023,54 @@ Humidity:
         
         print(f"\n⏳ Testing {battery_type} at multiple temperatures...")
         self.run_preset_command(type('', (), {'preset_action': 'battery'})())
+        self.safe_continue()
+    
+    def menu_plot_battery_results(self):
+        """Plot battery simulation results"""
+        print("\n📊 Plot Battery Simulation Results")
+        
+        # Get available battery simulation CSV files
+        battery_files = self.get_available_battery_files()
+        if not battery_files:
+            print("⚠️  No battery simulation files found!")
+            print("💡 Generate battery simulation data first using: Battery Simulation → Simulate with climate data")
+            self.safe_continue()
+            return
+        
+        # Show options: individual files or all files comparison
+        print("\nPlotting options:")
+        print("1. 📈 Plot individual file")
+        print("2. 🌍 Plot all files comparison")
+        print("0. ← Back")
+        
+        choice = input("Select option (0-2): ").strip()
+        
+        if choice == '0':
+            return
+        elif choice == '1':
+            # Plot individual file
+            print("\nAvailable battery simulation files:")
+            for i, file_info in enumerate(battery_files, 1):
+                print(f"  {i}. {file_info['name']}")
+            
+            try:
+                file_choice = int(input(f"\nSelect file to plot (1-{len(battery_files)}): ").strip())
+                if 1 <= file_choice <= len(battery_files):
+                    file_info = battery_files[file_choice-1]
+                    self.plot_battery_file(file_info['path'], file_info['name'])
+                else:
+                    print("❌ Invalid choice.")
+            except ValueError:
+                print("❌ Please enter a valid number.")
+        elif choice == '2':
+            # Plot all files comparison
+            if len(battery_files) < 2:
+                print("⚠️  Need at least 2 files for comparison.")
+            else:
+                self.plot_all_battery_files(battery_files)
+        else:
+            print("❌ Invalid choice.")
+        
         self.safe_continue()
     
     def menu_analyze_climate_data(self):
@@ -2597,7 +3178,8 @@ Humidity:
         profile = self.get_industrial_profile_input("Industrial profile", "medium_metallurgy")
         days = int(self.get_user_input("Number of days", "7"))
         region = self.get_region_input("Climate region", "southeast_sp")
-        output = self.get_user_input("Output file", f"outputs/simulations/industrial_{profile}_{days}d.csv")
+        solar_system = self.get_solar_system_input("Solar system", "medium_1000kw")
+        output = self.get_user_input("Output file", f"outputs/industrial_system/industrial_{profile}_{days}d.csv")
         
         print(f"\n⏳ Simulating {profile} for {days} days in {region}...")
         self.run_industrial_command(type('', (), {
@@ -2605,6 +3187,7 @@ Humidity:
             'profile': profile,
             'days': days,
             'climate_region': region,
+            'solar_system': solar_system,
             'output': output
         })())
         input("\nPress Enter to continue...")
@@ -2616,15 +3199,65 @@ Humidity:
         profile = self.get_industrial_profile_input("Industrial profile", "medium_metallurgy")
         days = int(self.get_user_input("Number of days", "30"))
         region = self.get_region_input("Climate region", "southeast_sp")
+        solar_system = self.get_solar_system_input("Solar system", "medium_1000kw")
         
         print(f"\n⏳ Running economic analysis for {profile} ({days} days)...")
         self.run_industrial_command(type('', (), {
             'industrial_action': 'economics',
             'profile': profile,
             'days': days,
-            'climate_region': region
+            'climate_region': region,
+            'solar_system': solar_system
         })())
         input("\nPress Enter to continue...")
+    
+    def menu_plot_industrial_results(self):
+        """Plot industrial simulation results"""
+        print("\n📊 Plot Industrial Simulation Results")
+        
+        # Get available industrial simulation CSV files
+        industrial_files = self.get_available_industrial_files()
+        if not industrial_files:
+            print("⚠️  No industrial simulation files found!")
+            print("💡 Generate industrial simulation data first using: Industrial System → Simulate industrial system")
+            self.safe_continue()
+            return
+        
+        # Show options: individual files or all files comparison
+        print("\nPlotting options:")
+        print("1. 📈 Plot individual file")
+        print("2. 🌍 Plot all files comparison")
+        print("0. ← Back")
+        
+        choice = input("Select option (0-2): ").strip()
+        
+        if choice == '0':
+            return
+        elif choice == '1':
+            # Plot individual file
+            print("\nAvailable industrial simulation files:")
+            for i, file_info in enumerate(industrial_files, 1):
+                print(f"  {i}. {file_info['name']}")
+            
+            try:
+                file_choice = int(input(f"\nSelect file to plot (1-{len(industrial_files)}): ").strip())
+                if 1 <= file_choice <= len(industrial_files):
+                    file_info = industrial_files[file_choice-1]
+                    self.plot_industrial_file(file_info['path'], file_info['name'])
+                else:
+                    print("❌ Invalid choice.")
+            except ValueError:
+                print("❌ Please enter a valid number.")
+        elif choice == '2':
+            # Plot all files comparison
+            if len(industrial_files) < 2:
+                print("⚠️  Need at least 2 files for comparison.")
+            else:
+                self.plot_all_industrial_files(industrial_files)
+        else:
+            print("❌ Invalid choice.")
+        
+        self.safe_continue()
         
     def menu_list_industrial_profiles(self):
         """List industrial profiles"""
@@ -2648,7 +3281,7 @@ Humidity:
         battery_type = self.get_battery_type_input("Battery type", "li_ion_500kwh")
         profile = self.get_industrial_profile_input("Industrial profile", "medium_metallurgy")
         region = self.get_region_input("Climate region", "southeast_sp")
-        output = self.get_user_input("Model output name", f"models/{algorithm}_{steps}steps")
+        output = self.get_user_input("Model output name", f"outputs/reinforcement_learning/{algorithm}_{steps}steps")
         
         print(f"\n⏳ Training {algorithm.upper()} agent for {steps} steps...")
         self.run_rl_command(type('', (), {
@@ -2758,7 +3391,7 @@ Humidity:
         profile = self.get_industrial_profile_input("Industrial profile", "medium_metallurgy")
         region = self.get_region_input("Climate region", "southeast_sp")
         days = int(self.get_user_input("Analysis period (days)", "30"))
-        output = self.get_user_input("Output file", "outputs/reports/analysis_report.html")
+        output = self.get_user_input("Output file", "outputs/analysis_reports/analysis_report.html")
         
         print(f"\n⏳ Generating analysis report...")
         self.run_analysis_command(type('', (), {
@@ -2783,7 +3416,7 @@ Humidity:
         plot_type = self.get_user_input("Plot type", "climate", ["climate", "battery", "industrial"])
         
         # List available data files
-        data_dir = Path("climate_data")
+        data_dir = Path("outputs/climate_data")
         if plot_type == "climate" and data_dir.exists():
             data_files = list(data_dir.glob("*.csv"))
         else:
@@ -2812,7 +3445,7 @@ Humidity:
             input("\nPress Enter to continue...")
             return
             
-        output = self.get_user_input("Output plot file", f"outputs/plots/{plot_type}_plot.png")
+        output = self.get_user_input("Output plot file", f"outputs/analysis_reports/{plot_type}_plot.png")
         
         print(f"\n⏳ Creating {plot_type} plot...")
         self.run_analysis_command(type('', (), {
@@ -2937,7 +3570,7 @@ Humidity:
         """Show disk usage of project directories"""
         print("\n💾 Disk Usage:")
         
-        dirs_to_check = ['climate_data', 'models', 'outputs', 'logs']
+        dirs_to_check = ['outputs', 'outputs/climate_data', 'outputs/models']
         total_size = 0
         
         for dir_name in dirs_to_check:
