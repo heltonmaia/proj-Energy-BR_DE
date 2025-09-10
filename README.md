@@ -15,7 +15,7 @@ This multi-project repository develops cutting-edge **Reinforcement Learning and
 **Production-ready** synthetic energy profile simulator with advanced RL-based DESS (Decentralized Energy Supply System) management for industrial applications.
 
 - **Focus**: Industrial energy optimization, multi-component DESS control
-- **Status**: ✅ **Fully implemented and operational**
+- **Status**: **Fully implemented and operational**
 - **RL Algorithm**: PPO for coordinated battery, electrolyzer, and fuel cell control
 - **Geographic Scope**: Brazil & Germany energy systems comparative analysis
 - **Key Features**: 
