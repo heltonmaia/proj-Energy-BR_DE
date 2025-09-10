@@ -56,15 +56,12 @@ class BatteryThermalCLI:
         
         # Create standardized output directories based on menu items
         self.climate_data_dir = Path("./outputs/climate_data")
-        self.battery_simulation_dir = Path("./outputs/battery_simulation")
         self.industrial_system_dir = Path("./outputs/industrial_system")
         self.reinforcement_learning_dir = Path("./outputs/reinforcement_learning")
-        self.analysis_reports_dir = Path("./outputs/analysis_reports")
-        self.preset_workflows_dir = Path("./outputs/preset_workflows")
         
         # Create all directories
-        for dir_path in [self.climate_data_dir, self.battery_simulation_dir, self.industrial_system_dir, 
-                        self.reinforcement_learning_dir, self.analysis_reports_dir, self.preset_workflows_dir]:
+        for dir_path in [self.climate_data_dir, self.industrial_system_dir, 
+                        self.reinforcement_learning_dir]:
             dir_path.mkdir(parents=True, exist_ok=True)
         
         # Backward compatibility aliases
@@ -79,16 +76,16 @@ class BatteryThermalCLI:
             epilog="""
 Examples:
   # Generate climate data for São Paulo
-  python cli.py climate generate --region southeast_sp --days 30 --output outputs/outputs/climate_data/sp_climate.csv
+  python cli.py climate generate --region southeast_sp --days 30 --output outputs/climate_data/sp_climate.csv
   
   # Run battery simulation
   python cli.py battery simulate --type li_ion_500kwh --temperature 25 --hours 24
   
   # Train RL agent
-  python cli.py rl train --algorithm ppo --steps 100000 --output outputs/outputs/reinforcement_learning/agent
+  python cli.py rl train --algorithm ppo --steps 100000 --output outputs/reinforcement_learning/agent
   
   # Evaluate trained agent
-  python cli.py rl evaluate --model outputs/outputs/reinforcement_learning/agent.zip --episodes 10
+  python cli.py rl evaluate --model outputs/reinforcement_learning/agent.zip --episodes 10
   
   # Generate analysis report
   python cli.py analysis report --battery-type li_ion_500kwh --output report.html
@@ -636,7 +633,7 @@ Examples:
             if args.eval_freq > 0:
                 eval_callback = EvalCallback(
                     env, best_model_save_path=str(self.models_dir),
-                    log_path=str(self.output_dir), eval_freq=args.eval_freq
+                    log_path=str(self.models_dir), eval_freq=args.eval_freq
                 )
                 callbacks.append(eval_callback)
             
@@ -1041,7 +1038,7 @@ Examples:
                 'climate_action': 'generate',
                 'region': 'southeast_sp',
                 'days': 30,
-                'output': 'outputs/outputs/climate_data/sp_climate_30d.csv',
+                'output': 'outputs/climate_data/sp_climate_30d.csv',
                 'start_date': '2024-01-01'
             })())
             print("Climate data generated!")
@@ -1049,11 +1046,11 @@ Examples:
         elif args.preset_action == 'climate-all':
             print("Generating climate data for all regions (7 days each)...")
             regions = [
-                ('southeast_sp', 'outputs/outputs/climate_data/southeast_sp_7d.csv'),
-                ('northeast_rn', 'outputs/outputs/climate_data/northeast_rn_7d.csv'),
-                ('south_rs', 'outputs/outputs/climate_data/south_rs_7d.csv'),
-                ('central_west_mt', 'outputs/outputs/climate_data/central_west_mt_7d.csv'),
-                ('north_am', 'outputs/outputs/climate_data/north_am_7d.csv')
+                ('southeast_sp', 'outputs/climate_data/southeast_sp_7d.csv'),
+                ('northeast_rn', 'outputs/climate_data/northeast_rn_7d.csv'),
+                ('south_rs', 'outputs/climate_data/south_rs_7d.csv'),
+                ('central_west_mt', 'outputs/climate_data/central_west_mt_7d.csv'),
+                ('north_am', 'outputs/climate_data/north_am_7d.csv')
             ]
             for region, output in regions:
                 self.run_climate_command(type('', (), {
@@ -1087,9 +1084,9 @@ Examples:
                 'temperature_min': 10,
                 'temperature_max': 50,
                 'temperature_step': 5,
-                'output': 'outputs/battery_simulation/battery_comparison.csv'
+                'output': 'outputs/industrial_system/battery_comparison.csv'
             })())
-            print("Battery comparison saved to outputs/battery_simulation/battery_comparison.csv")
+            print("Battery comparison saved to outputs/industrial_system/battery_comparison.csv")
             
         elif args.preset_action == 'industrial':
             print("Simulating industrial system (7 days)...")
@@ -1098,9 +1095,9 @@ Examples:
                 'profile': 'medium_metallurgy',
                 'days': 7,
                 'climate_region': 'southeast_sp',
-                'output': 'outputs/battery_simulation/industrial_sim_7d.csv'
+                'output': 'outputs/industrial_system/industrial_sim_7d.csv'
             })())
-            print("Industrial simulation saved to outputs/battery_simulation/industrial_sim_7d.csv")
+            print("Industrial simulation saved to outputs/industrial_system/industrial_sim_7d.csv")
             
         elif args.preset_action == 'industrial-economics':
             print("Running economic analysis (30 days)...")
@@ -1121,7 +1118,7 @@ Examples:
                 'rl_action': 'train',
                 'algorithm': 'ppo',
                 'steps': 10000,
-                'output': 'outputs/outputs/reinforcement_learning/ppo_quick',
+                'output': 'outputs/reinforcement_learning/ppo_quick',
                 'eval_freq': 2000,
                 'tensorboard_log': None,
                 'battery_type': 'li_ion_500kwh',
@@ -1186,9 +1183,9 @@ Examples:
                     'rl_action': 'evaluate',
                     'model': model_path,
                     'episodes': 5,
-                    'output': 'outputs/evaluations/evaluation_results.json'
+                    'output': 'outputs/reinforcement_learning/evaluation_results.json'
                 })())
-                print("Evaluation results saved to outputs/evaluations/evaluation_results.json")
+                print("Evaluation results saved to outputs/reinforcement_learning/evaluation_results.json")
             else:
                 print("No trained model found! Run 'python cli.py preset train' first.")
                 
@@ -1232,9 +1229,9 @@ Examples:
                 'industrial_profile': 'medium_metallurgy',
                 'climate_region': 'southeast_sp',
                 'analysis_days': 30,
-                'output': 'outputs/analysis_reports/analysis_report.html'
+                'output': 'outputs/industrial_system/analysis_report.html'
             })())
-            print("Report saved to outputs/analysis_reports/analysis_report.html")
+            print("Report saved to outputs/industrial_system/analysis_report.html")
             
         elif args.preset_action == 'optimize':
             print("Running optimization analysis...")
@@ -1262,14 +1259,14 @@ Examples:
             else:
                 print("No climate data found! Run 'python cli.py preset climate' first.")
                 
-            if Path("outputs/battery_simulation/industrial_sim_7d.csv").exists():
+            if Path("outputs/industrial_system/industrial_sim_7d.csv").exists():
                 self.run_analysis_command(type('', (), {
                     'analysis_action': 'plot',
                     'type': 'industrial',
-                    'data': 'outputs/battery_simulation/industrial_sim_7d.csv',
-                    'output': 'outputs/analysis_reports/industrial_plot.png'
+                    'data': 'outputs/industrial_system/industrial_sim_7d.csv',
+                    'output': 'outputs/industrial_system/industrial_plot.png'
                 })())
-                print("Industrial plot saved to outputs/analysis_reports/industrial_plot.png")
+                print("Industrial plot saved to outputs/industrial_system/industrial_plot.png")
                 
         # Development workflows
         elif args.preset_action == 'dev-setup':
@@ -1868,7 +1865,7 @@ Examples:
     def get_available_battery_files(self):
         """Get list of available battery simulation files"""
         battery_files = []
-        data_dir = Path("outputs/battery_simulation")
+        data_dir = Path("outputs/industrial_system")
         if data_dir.exists():
             for csv_file in data_dir.glob("*.csv"):
                 battery_files.append({
@@ -1899,7 +1896,7 @@ Examples:
                 return
             
             # Create output directory
-            output_dir = Path("outputs/battery_simulation")
+            output_dir = Path("outputs/industrial_system")
             output_dir.mkdir(parents=True, exist_ok=True)
             
             # Convert hours to days for better readability
@@ -2036,7 +2033,7 @@ ENERGY: {df['energy'].sum():.0f}kWh net ({df['energy'].sum()/days_simulated:.1f}
             import pandas as pd
             
             # Create output directory
-            output_dir = Path("outputs/battery_simulation")
+            output_dir = Path("outputs/industrial_system")
             output_dir.mkdir(parents=True, exist_ok=True)
             
             # Load all data
@@ -2957,7 +2954,7 @@ Humidity:
             save_choice = input("\n💾 Save results to CSV? (y/N): ").strip().lower()
             if save_choice == 'y':
                 filename = f"battery_sim_{battery_type}_{climate_file['region']}_{action}.csv"
-                output_path = self.battery_simulation_dir / filename
+                output_path = self.industrial_system_dir / filename
                 
                 # Convert results to DataFrame and save
                 import pandas as pd
@@ -2972,7 +2969,7 @@ Humidity:
         
         temp_min = int(self.get_user_input("Minimum temperature (°C)", "10"))
         temp_max = int(self.get_user_input("Maximum temperature (°C)", "50"))
-        output = self.get_user_input("Output file", "outputs/battery_simulation/battery_comparison.csv")
+        output = self.get_user_input("Output file", "outputs/industrial_system/battery_comparison.csv")
         
         print(f"\n⏳ Comparing batteries from {temp_min}°C to {temp_max}°C...")
         self.run_battery_command(type('', (), {
@@ -3260,7 +3257,7 @@ Humidity:
         
         # Generate output filename
         filename = f"integrated_{profile}_{battery_type}_{region}_{days}d.csv"
-        output_path = self.outputs_dir / "industrial_system" / filename
+        output_path = self.industrial_system_dir / filename
         
         print(f"\n⏳ Running complete simulation...")
         print(f"🏭 Industry: {profile}")
@@ -3469,7 +3466,7 @@ Humidity:
         print("\n📊 Plot Industrial Battery System Results")
         
         # Check for available results
-        results_dir = self.outputs_dir / "industrial_system"
+        results_dir = self.industrial_system_dir
         if not results_dir.exists():
             print("❌ No simulation results found!")
             print("💡 Please run a simulation first:")
@@ -3502,124 +3499,128 @@ Humidity:
             else:
                 print("❌ Invalid selection")
                 
-        except (ValueError, IndexError):
-            print("❌ Invalid input")
+        except ValueError:
+            print("❌ Invalid input - please enter a number")
+        except Exception as e:
+            print(f"❌ Error generating plots: {e}")
+            if '--debug' in sys.argv:
+                import traceback
+                traceback.print_exc()
         
         input("\nPress Enter to continue...")
     
     def plot_integrated_industrial_battery_results(self, csv_file):
         """Create comprehensive plots for integrated industrial battery system results"""
-        import pandas as pd
-        import matplotlib.pyplot as plt
-        import matplotlib.dates as mdates
-        from datetime import datetime
-        
-        # Read data
-        df = pd.read_csv(csv_file)
-        df['timestamp'] = pd.to_datetime(df['timestamp'])
-        
-        # Create figure with subplots
-        fig, axes = plt.subplots(2, 2, figsize=(16, 12))
-        fig.suptitle(f'Industrial Battery System Analysis\n{csv_file.name}', fontsize=16, fontweight='bold')
-        
-        # Plot 1: Energy flows over time
-        ax1 = axes[0, 0]
-        ax1.plot(df['timestamp'], df['demand_kw'], label='Demand', color='red', alpha=0.8)
-        ax1.plot(df['timestamp'], df['solar_generation_kw'], label='Solar Generation', color='orange', alpha=0.8)
-        ax1.plot(df['timestamp'], df['grid_import_kw'], label='Grid Import', color='gray', alpha=0.6)
-        ax1.fill_between(df['timestamp'], 0, df['battery_power_kw'], 
-                         where=(df['battery_action'] == 'charge'), 
-                         label='Battery Charge', color='green', alpha=0.3)
-        ax1.fill_between(df['timestamp'], 0, -df['battery_power_kw'], 
-                         where=(df['battery_action'] == 'discharge'), 
-                         label='Battery Discharge', color='blue', alpha=0.3)
-        ax1.set_title('Energy Flows Over Time')
-        ax1.set_ylabel('Power (kW)')
-        ax1.legend()
-        ax1.grid(True, alpha=0.3)
-        
-        # Plot 2: Battery status
-        ax2 = axes[0, 1]
-        ax2_temp = ax2.twinx()
-        
-        line1 = ax2.plot(df['timestamp'], df['battery_soc'] * 100, label='Battery SOC (%)', color='blue', linewidth=2)
-        line2 = ax2_temp.plot(df['timestamp'], df['battery_temp'], label='Battery Temp (°C)', color='red', linewidth=2)
-        line3 = ax2_temp.plot(df['timestamp'], df['ambient_temp'], label='Ambient Temp (°C)', color='orange', alpha=0.7)
-        
-        ax2.set_title('Battery Status')
-        ax2.set_ylabel('State of Charge (%)', color='blue')
-        ax2_temp.set_ylabel('Temperature (°C)', color='red')
-        ax2.set_ylim(0, 100)
-        
-        # Combine legends
-        lines = line1 + line2 + line3
-        labels = [l.get_label() for l in lines]
-        ax2.legend(lines, labels, loc='center right')
-        ax2.grid(True, alpha=0.3)
-        
-        # Plot 3: Economic analysis
-        ax3 = axes[1, 0]
-        daily_costs = df.groupby(df['timestamp'].dt.date)['net_cost_brl'].sum()
-        ax3.bar(range(len(daily_costs)), daily_costs.values, color='red', alpha=0.7)
-        ax3.set_title('Daily Energy Costs')
-        ax3.set_ylabel('Cost (R$)')
-        ax3.set_xlabel('Day')
-        ax3.grid(True, alpha=0.3)
-        
-        # Add cost statistics
-        total_cost = df['net_cost_brl'].sum()
-        avg_daily_cost = daily_costs.mean()
-        ax3.text(0.02, 0.98, f'Total: R$ {total_cost:.2f}\\nAvg/day: R$ {avg_daily_cost:.2f}', 
-                transform=ax3.transAxes, verticalalignment='top', 
-                bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
-        
-        # Plot 4: System performance summary
-        ax4 = axes[1, 1]
-        
-        # Calculate key metrics
-        total_demand = df['demand_kw'].sum()
-        total_solar = df['solar_generation_kw'].sum()
-        total_self_consumption = df['self_consumption_kw'].sum()
-        self_consumption_ratio = (total_self_consumption / total_demand * 100) if total_demand > 0 else 0
-        
-        battery_charge_energy = df[df['battery_action'] == 'charge']['battery_power_kw'].sum()
-        battery_discharge_energy = df[df['battery_action'] == 'discharge']['battery_power_kw'].sum()
-        battery_efficiency = (battery_discharge_energy / battery_charge_energy * 100) if battery_charge_energy > 0 else 0
-        
-        avg_soc = df['battery_soc'].mean() * 100
-        final_degradation = df['battery_soc'].iloc[-1] if len(df) > 0 else 0
-        
-        # Performance metrics table
-        metrics = [
-            f'Self-consumption: {self_consumption_ratio:.1f}%',
-            f'Battery efficiency: {battery_efficiency:.1f}%',
-            f'Average SOC: {avg_soc:.1f}%',
-            f'Total cost: R$ {total_cost:.2f}',
-            f'Solar utilization: {(total_self_consumption/total_solar*100 if total_solar > 0 else 0):.1f}%'
-        ]
-        
-        ax4.axis('off')
-        ax4.text(0.1, 0.9, 'System Performance Summary', fontsize=14, fontweight='bold', transform=ax4.transAxes)
-        
-        for i, metric in enumerate(metrics):
-            ax4.text(0.1, 0.8 - i*0.12, metric, fontsize=12, transform=ax4.transAxes,
-                    bbox=dict(boxstyle='round,pad=0.3', facecolor='lightblue', alpha=0.7))
-        
-        # Format x-axes with dates
-        for ax in [ax1, ax2]:
-            ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d'))
-            ax.xaxis.set_major_locator(mdates.DayLocator(interval=max(1, len(df)//24//7)))  # Weekly ticks for longer periods
-            plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
-        
-        plt.tight_layout()
-        
-        # Save plot
-        plot_filename = f"integrated_analysis_{csv_file.stem}.png"
-        plot_path = csv_file.parent / plot_filename
-        plt.savefig(plot_path, dpi=300, bbox_inches='tight')
-        plt.show()
-        
-        print(f"📊 Plot saved to: {plot_path}")
+        try:
+            import pandas as pd
+            import matplotlib.pyplot as plt
+            import matplotlib.dates as mdates
+            from datetime import datetime
+            
+            print(f"📖 Reading data from: {csv_file}")
+            
+            # Read data
+            df = pd.read_csv(csv_file)
+            print(f"✅ Data loaded: {len(df)} rows, {len(df.columns)} columns")
+            
+            # Check required columns
+            required_columns = ['timestamp', 'demand_kw', 'solar_generation_kw', 'battery_soc', 
+                              'battery_temp', 'ambient_temp', 'battery_action', 'battery_power_kw',
+                              'grid_import_kw', 'net_cost_brl', 'self_consumption_kw']
+            
+            missing_columns = [col for col in required_columns if col not in df.columns]
+            if missing_columns:
+                raise ValueError(f"Missing columns: {missing_columns}")
+            
+            df['timestamp'] = pd.to_datetime(df['timestamp'])
+            print(f"✅ Timestamps converted")
+            
+            # Set matplotlib backend to avoid display issues
+            import matplotlib
+            matplotlib.use('Agg')  # Use non-interactive backend
+            
+            # Create figure with subplots
+            fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+            fig.suptitle(f'Industrial Battery System Analysis\n{csv_file.name}', fontsize=16, fontweight='bold')
+            
+            print("📊 Creating plots...")
+            
+            # Plot 1: Energy flows over time
+            ax1 = axes[0, 0]
+            ax1.plot(df['timestamp'], df['demand_kw'], label='Demand', color='red', alpha=0.8)
+            ax1.plot(df['timestamp'], df['solar_generation_kw'], label='Solar Generation', color='orange', alpha=0.8)
+            ax1.plot(df['timestamp'], df['grid_import_kw'], label='Grid Import', color='gray', alpha=0.6)
+            ax1.set_title('Energy Flows Over Time')
+            ax1.set_ylabel('Power (kW)')
+            ax1.legend()
+            ax1.grid(True, alpha=0.3)
+            
+            # Plot 2: Battery status
+            ax2 = axes[0, 1]
+            ax2.plot(df['timestamp'], df['battery_soc'] * 100, label='Battery SOC (%)', color='blue', linewidth=2)
+            ax2.set_title('Battery State of Charge')
+            ax2.set_ylabel('State of Charge (%)')
+            ax2.set_ylim(0, 100)
+            ax2.legend()
+            ax2.grid(True, alpha=0.3)
+            
+            # Plot 3: Temperature comparison
+            ax3 = axes[1, 0]
+            ax3.plot(df['timestamp'], df['battery_temp'], label='Battery Temp', color='red', linewidth=2)
+            ax3.plot(df['timestamp'], df['ambient_temp'], label='Ambient Temp', color='orange', alpha=0.7)
+            ax3.set_title('Temperature Comparison')
+            ax3.set_ylabel('Temperature (°C)')
+            ax3.legend()
+            ax3.grid(True, alpha=0.3)
+            
+            # Plot 4: Daily costs
+            ax4 = axes[1, 1]
+            daily_costs = df.groupby(df['timestamp'].dt.date)['net_cost_brl'].sum()
+            ax4.bar(range(len(daily_costs)), daily_costs.values, color='red', alpha=0.7)
+            ax4.set_title('Daily Energy Costs')
+            ax4.set_ylabel('Cost (R$)')
+            ax4.set_xlabel('Day')
+            ax4.grid(True, alpha=0.3)
+            
+            # Add cost statistics
+            total_cost = df['net_cost_brl'].sum()
+            avg_daily_cost = daily_costs.mean()
+            ax4.text(0.02, 0.98, f'Total: R$ {total_cost:.2f}\nAvg/day: R$ {avg_daily_cost:.2f}', 
+                    transform=ax4.transAxes, verticalalignment='top', 
+                    bbox=dict(boxstyle='round', facecolor='wheat', alpha=0.8))
+            
+            # Format x-axes with dates
+            for ax in [ax1, ax2, ax3]:
+                ax.xaxis.set_major_formatter(mdates.DateFormatter('%m/%d %H'))
+                plt.setp(ax.xaxis.get_majorticklabels(), rotation=45)
+            
+            plt.tight_layout()
+            
+            # Save plot
+            plot_filename = f"integrated_analysis_{csv_file.stem}.png"
+            plot_path = csv_file.parent / plot_filename
+            plt.savefig(plot_path, dpi=300, bbox_inches='tight')
+            plt.close()  # Close figure to free memory
+            
+            print(f"📊 Plot saved to: {plot_path}")
+            
+            # Calculate and show summary metrics
+            total_demand = df['demand_kw'].sum()
+            total_solar = df['solar_generation_kw'].sum()
+            total_self_consumption = df['self_consumption_kw'].sum()
+            self_consumption_ratio = (total_self_consumption / total_demand * 100) if total_demand > 0 else 0
+            avg_soc = df['battery_soc'].mean() * 100
+            
+            print("\n📈 System Performance Summary:")
+            print(f"   Self-consumption: {self_consumption_ratio:.1f}%")
+            print(f"   Average SOC: {avg_soc:.1f}%")
+            print(f"   Total cost: R$ {total_cost:.2f}")
+            print(f"   Total solar: {total_solar:.1f} kWh")
+            
+        except Exception as e:
+            print(f"❌ Error in plotting function: {e}")
+            import traceback
+            traceback.print_exc()
         
     def menu_train_agent(self):
         """Menu-driven RL agent training"""
@@ -3688,7 +3689,7 @@ Humidity:
             return
             
         episodes = int(self.get_user_input("Number of episodes", "5"))
-        output = self.get_user_input("Output file", "outputs/evaluations/evaluation_results.json")
+        output = self.get_user_input("Output file", "outputs/reinforcement_learning/evaluation_results.json")
         
         print(f"\n⏳ Evaluating {Path(model_path).stem} for {episodes} episodes...")
         self.run_rl_command(type('', (), {
@@ -3745,7 +3746,7 @@ Humidity:
         profile = self.get_industrial_profile_input("Industrial profile", "medium_metallurgy")
         region = self.get_region_input("Climate region", "southeast_sp")
         days = int(self.get_user_input("Analysis period (days)", "30"))
-        output = self.get_user_input("Output file", "outputs/analysis_reports/analysis_report.html")
+        output = self.get_user_input("Output file", "outputs/industrial_system/analysis_report.html")
         
         print(f"\n⏳ Generating analysis report...")
         self.run_analysis_command(type('', (), {
@@ -3799,7 +3800,7 @@ Humidity:
             input("\nPress Enter to continue...")
             return
             
-        output = self.get_user_input("Output plot file", f"outputs/analysis_reports/{plot_type}_plot.png")
+        output = self.get_user_input("Output plot file", f"outputs/industrial_system/{plot_type}_plot.png")
         
         print(f"\n⏳ Creating {plot_type} plot...")
         self.run_analysis_command(type('', (), {

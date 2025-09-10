@@ -42,10 +42,8 @@ battery-thermal-rl/
 │   └── utils/                   # Utilities and helpers
 ├── outputs/                      # All simulation results
 │   ├── climate_data/            # Climate data + plots
-│   ├── battery_simulation/      # Battery simulation + plots
-│   ├── industrial_system/       # Industrial simulation + plots
-│   ├── reinforcement_learning/  # Trained RL models
-│   └── analysis_reports/        # Analysis reports (if needed)
+│   ├── industrial_system/       # Industrial battery system + plots + analysis
+│   └── reinforcement_learning/  # Trained RL models
 ├── docs/                        # Mathematical documentation
 │   ├── mathematical_modeling.md # Complete mathematical tutorial
 │   └── mathematical_appendix.md # Advanced theory and derivations
@@ -108,19 +106,12 @@ Each module includes comprehensive plotting capabilities:
 - Multi-region comparison plots
 - Battery performance implications analysis
 
-### **Battery Simulation Plots** (`outputs/battery_simulation/`)
-- Temperature vs SOC evolution over 30 days
-- Efficiency trends and degradation analysis  
-- Energy transfer patterns (cumulative and instantaneous)
-- Daily temperature profiles with statistics
-- Multi-file comparison capabilities
-
-### **Industrial System Plots** (`outputs/industrial_system/`)
-- Energy flows: demand, solar generation, grid import (30 days)
-- Daily energy patterns (24h average profiles)
-- Cost analysis: hourly costs vs electricity prices
-- Economic statistics and self-consumption ratios
-- Multi-simulation comparison plots
+### **Industrial Battery System Plots** (`outputs/industrial_system/`)
+- **Integrated energy flows**: industrial demand, solar generation, battery operations, grid interactions
+- **Battery performance**: SOC evolution, temperature management, thermal efficiency over time
+- **Economic analysis**: daily energy costs, self-consumption ratios, cost savings visualization
+- **System performance metrics**: comprehensive 4-panel analysis with key performance indicators
+- **Multi-configuration comparisons**: different battery types, industrial profiles, and climate regions
 
 ## 🎮 How to Use
 
