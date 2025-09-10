@@ -29,7 +29,7 @@ This multi-project repository develops cutting-edge **Reinforcement Learning and
 **Advanced AI-powered battery optimization system** for industrial applications with solar integration, featuring intelligent thermal management optimized for Brazilian climate conditions.
 
 - **Focus**: Temperature-aware battery optimization, degradation prevention
-- **Status**: ✅ **Fully implemented with comprehensive features**
+- **Status**: **Fully implemented with comprehensive features**
 - **RL Algorithm**: PPO, SAC, TD3 for thermal-aware charge/discharge control
 - **Geographic Scope**: 5 Brazilian regions with distinct climate profiles
 - **Key Features**:
