@@ -11,7 +11,7 @@ This multi-project repository develops cutting-edge **Reinforcement Learning and
 
 ## Projects Overview
 
-### 🔋 [Energy Profile RL](projects/energy-profile-rl/) - **DESS Management**
+### ⚡ [Energy Profile RL](projects/energy-profile-rl/) - **DESS Management**
 **Production-ready** synthetic energy profile simulator with advanced RL-based DESS (Decentralized Energy Supply System) management for industrial applications.
 
 - **Focus**: Industrial energy optimization, multi-component DESS control
@@ -60,7 +60,7 @@ Component Level (Battery Thermal RL)
 └── Real-Time Performance Monitoring
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 proj-Energy-BR_DE/
@@ -79,7 +79,7 @@ proj-Energy-BR_DE/
 └── README.md                       # This overview
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 ### **Quick Setup**
 ```bash
@@ -126,7 +126,7 @@ python cli.py rl train --climate-region northeast_rn --steps 100000
 python cli.py preset benchmark  # Multi-configuration comparison
 ```
 
-## 🔬 Research Focus
+## Research Focus
 
 ### **System-Level Energy Modeling**
 - **Synthetic energy profile generation** with realistic renewable patterns (solar, wind, hydro)
@@ -156,7 +156,7 @@ python cli.py preset benchmark  # Multi-configuration comparison
 - **Advanced visualization**: Comprehensive plotting systems with economic analysis
 - **Cross-market analysis**: Brazil-Germany comparative studies with different energy portfolios
 
-## 📊 Monitoring & Visualization
+## Monitoring & Visualization
 
 ### **Training Monitoring**
 Both projects provide comprehensive monitoring capabilities:
@@ -234,5 +234,5 @@ See individual project READMEs for specific contribution guidelines and developm
 
 ---
 
-**🔬 Advanced AI-Powered Energy Research** - *Combining system-level optimization with component-level thermal intelligence for next-generation industrial energy management*
+**Advanced AI-Powered Energy Research** - *Combining system-level optimization with component-level thermal intelligence for next-generation industrial energy management*
 
